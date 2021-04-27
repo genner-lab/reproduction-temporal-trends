@@ -1,26 +1,34 @@
 # Reproduction explains environmental DNA variation in a temperate marine fish community
 
-Code for the marine eDNA fish reproduction paper published as:
-
-Collins, R.A., Baillie, C., Halliday, N.C., Rainbird, S., Sims, D.W., Mariani, S. & Genner, M.J. (2021) Reproduction explains environmental DNA variation
+Code for the marine eDNA fish reproduction paper published as: Collins, R.A., Baillie, C., Halliday, N.C., Rainbird, S., Sims, D.W., Mariani, S. & Genner, M.J. (2021) Reproduction explains environmental DNA variation
 in a temperate marine fish community. _Insert Journal_. [https://doi.org/xxx](https://doi.org/xxx).
+
+## Important notes
+
+* Unless otherwise stated, run R from the project base directory, but run bash terminal from the script location `scripts/`.
+
+* It is generally best to run scripts line-by-line rather than excecuting them, in case of errors.
+
+* Always restart R/bash before running each step.
 
 ## Organise and document
 
-Important note: unless otherwise stated, run R from the project base directory, but run bash terminal from the script location `scripts`.
+### 1: Clone repo, install software, report versions
 
-### 1: Install and record software installed
+* In bash terminal, clone repository with `git clone https://github.com/genner-lab/reproduction-temporal-trends.git`. 
 
-* In bash terminal (from base directory) create a temp project file with `mkdir temp`.
+* Change to base directory with `cd reproduction-temporal-trends`, and create a temporary output file with `mkdir temp`.
 
-* In R, install R packages with renv.
+* Install the following software on your system, and make them available on your $PATH: [cutadapt](https://github.com/marcelm/cutadapt) v2.10, [vsearch](https://github.com/torognes/vsearch) v2.15, [fqtools](https://github.com/alastair-droop/fqtools) v2.3, [raxml-ng](https://github.com/amkozlov/raxml-ng) v1.0.2, [epa-ng](https://github.com/Pbdas/epa-ng) v0.3.7, [gappa](https://github.com/lczech/gappa) v0.6.1, [hmmer](http://hmmer.org/) v3.1b2, [ncbi-blast](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download) v2.10.1, [mafft](http://mafft.cbrc.jp/alignment/software/) v7.271.
+
+* In R, install R packages with renv:
 
 ```r
-# after cloning the repository
+# install all from renv.lock
 renv::restore()
 ```
 
-* In R run:
+* To report package versions to the `temp/sessionInfo.txt` file, in R run:
 
 ```r
 libs <- sort(unique(unlist(lapply(list.files(path="scripts",pattern="\\.R"),function(x) grep("^library\\(.+\\)",readLines(here::here("scripts",x)),value=TRUE)))))
@@ -35,7 +43,7 @@ sink()
 quit(save="no")
 ```
 
-* In a bash terminal (in project base directory), run: 
+* To report program versions to the `temp/sessionInfo.txt` file, in a bash terminal (in project base directory), run: 
 
 ```bash
 { printf "\n\n-----------------------\nLinux software versions\n-----------------------\n"; } >> temp/sessionInfo.txt
@@ -53,20 +61,20 @@ quit(save="no")
 
 ### 2: Prepare reference library
 
-Only needs to be done once at the beginning. Best to run scripts line by line rather than excecuting them, in case of errors. Restart R before running each step.
+Only needs to be done once at the beginning.
 
 * Run `scripts/download-refseq.sh` to download the REFSEQ reference library.
 
 * Run `scripts/assemble-refseq.R` to annotate the references. 
 
-* Run `scripts/join-references.R` to combine the custom genbank ((https://doi.org/10.5281/zenodo.4443447)[https://doi.org/10.5281/zenodo.4443447]) and the local SeaDNA reference libraries.
+* Run `scripts/join-references.R` to combine the custom genbank ([doi.org/10.5281/zenodo.4443447](https://doi.org/10.5281/zenodo.4443447)) and the local SeaDNA reference libraries.
 
 * Run `scripts/primer-fit.R` to generate primer efficiency scores.
 
 
 ## Process libraries
 
-These steps are carried out for each sequencing library individually. Each script  at the top, has a choice of libraries to run (lib1, lib2, lib3 etc) , and they must be run one at a time, after restarting R or a new bash session.
+These steps are carried out for each sequencing library individually. Each script  at the top, has a choice of libraries to run (lib1, lib2, lib3, lib4) , and they must be run one at a time, after restarting R or a new bash session.
 
 ### 3: Prepare barcodes for demultiplexing
 
@@ -85,7 +93,7 @@ These steps are carried out for each sequencing library individually. Each scrip
 
 ### 6: Assign taxonomy
 
-The taxonomy assignment step is a bit of a pain because in requires jumping back and forth between a bash (`scripts/taxonomic-assignment.sh`) and an R script (`scripts/taxonomic-assignment.R`) to process the data at different steps, and for each library. Follow the step numbers in the scripts. Process each library one at a time through all steps.
+The taxonomy assignment step is a bit of a pain because in requires jumping back and forth between a bash (`scripts/taxonomic-assignment.sh`) and an R script (`scripts/taxonomic-assignment.R`) to process the data at different steps, and for each library. Follow the step numbers in the scripts. Process each library one at a time through all steps. Eventually I will turn this into one executable script, and run assignment only once on the combined outputs for all libraries.
 
 * [bash] Start in `scripts/taxonomic-assignment.sh`, and create Blast and Sintax databases (Step 1 in `scripts/taxonomic-assignment.sh`). This step only needs to be run once for all libraries.
 
@@ -109,7 +117,7 @@ The taxonomy assignment step is a bit of a pain because in requires jumping back
 
 * [R] Combine the taxonomic assignment results (Step 11 in `scripts/taxonomic-assignment.R`). 
 
-* [R] Get sample level assignments (Step 12 in `scripts/taxonomic-assignment.R`). This step additionally requires the `plates` and `events.master` objects to have been created by running the `scripts/prep-barcodes.R` script (for same libraries).
+* [R] Get sample level assignments (Step 12 in `scripts/taxonomic-assignment.R`). This step additionally requires the 'plates' and 'events.master' objects to have been created by running the `scripts/prep-barcodes.R` script (for same libraries).
 
 
 ### 7: Combine assignment results for all libraries
