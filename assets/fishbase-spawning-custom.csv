@@ -1,0 +1,108 @@
+species,lifestyle,notes,Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec
+Atherina boyeri,pelagic,,NA,NA,NA,NA,111,111,111,NA,NA,NA,NA,NA
+Belone belone,pelagic,,NA,NA,NA,NA,111,111,NA,NA,NA,NA,NA,NA
+Clupea harengus,pelagic,Modified following Ellis et al. (2012).,111,111,111,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Sardina pilchardus,pelagic,"Modified following Haynes and Nichols (1994), CEFAS (2007).",NA,NA,111,111,111,111,111,NA,NA,NA,NA,NA
+Sprattus sprattus,pelagic,"Modified following Pawson (1995), Heesen et al. (2015).",NA,111,111,111,111,111,111,111,NA,NA,NA,NA
+Engraulis encrasicolus,pelagic,Modified following CEFAS (2007).,NA,NA,NA,111,111,111,111,111,NA,NA,NA,NA
+Gadus morhua,benthopelagic,"Modified following PMF (Steven, 1957).",NA,111,111,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Melanogrammus aeglefinus,benthopelagic,,NA,111,111,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Merlangius merlangus,benthopelagic,Modified following Ellis et al. (2012) and Pawson (1995).,NA,111,111,111,111,111,NA,NA,NA,NA,NA,NA
+Micromesistius poutassou,benthopelagic,,NA,NA,111,111,NA,NA,NA,NA,NA,NA,NA,NA
+Pollachius pollachius,benthopelagic,Modified following CEFAS (2007).,111,111,111,111,NA,NA,NA,NA,NA,NA,NA,NA
+Pollachius virens,benthopelagic,,111,111,111,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Raniceps raninus,benthic,,NA,NA,NA,NA,111,111,111,111,111,NA,NA,NA
+Trisopterus esmarkii,benthopelagic,,111,111,111,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Trisopterus luscus,benthopelagic,Modified following CEFAS (2007).,NA,NA,111,111,NA,NA,NA,NA,NA,NA,NA,NA
+Trisopterus minutus,benthopelagic,Modified following Heesen et al. (2015).,NA,111,111,111,111,NA,NA,NA,NA,NA,NA,NA
+Ciliata mustela,benthic,,NA,111,111,111,111,NA,NA,NA,NA,NA,NA,NA
+Ciliata septentrionalis,benthic,,NA,NA,111,111,111,NA,NA,NA,NA,NA,NA,NA
+Enchelyopus cimbrius,benthic,Modified following CEFAS (2007).,NA,NA,NA,NA,111,111,111,111,NA,NA,NA,NA
+Molva molva,benthopelagic,Modified following Ellis et al. (2012).,NA,111,111,111,111,NA,NA,NA,NA,NA,NA,NA
+Merluccius merluccius,benthopelagic,Modified following Ellis et al. (2012).,111,111,111,111,111,111,NA,NA,NA,NA,NA,NA
+Phycis blennoides,benthopelagic,Modified following Heesen et al. (2015).,NA,NA,111,111,111,111,NA,NA,NA,NA,NA,NA
+Diplecogaster bimaculata,benthic,,NA,NA,NA,NA,111,111,111,111,NA,NA,NA,NA
+Lophius piscatorius,benthic,Modified following Pawson (1995).,NA,NA,111,111,111,111,111,NA,NA,NA,NA,NA
+Lophius budegassa,benthic,As L. piscatorius,NA,NA,111,111,111,111,111,NA,NA,NA,NA,NA
+Chelon auratus,pelagic,"Modified following CEFAS (2007), Heesen et al. (2015).",NA,NA,NA,NA,NA,NA,111,111,111,111,111,NA
+Chelon labrosus,pelagic,Modified following CEFAS (2007).,NA,NA,NA,111,111,NA,NA,NA,NA,NA,NA,NA
+Chelon ramada,pelagic,Modified following CEFAS (2007).,111,NA,NA,NA,NA,NA,NA,NA,NA,111,111,111
+Ammodytes marinus,benthopelagic,Modified following Ellis et al. (2012).,111,111,NA,NA,NA,NA,NA,NA,NA,NA,111,111
+Ammodytes tobianus,benthopelagic,Modified following Ellis et al. (2012).,111,111,NA,NA,NA,NA,NA,NA,NA,NA,111,111
+Hyperoplus lanceolatus,benthopelagic,Modified following Ellis et al. (2012).,111,111,NA,NA,NA,NA,NA,NA,NA,NA,111,111
+Hyperoplus immaculatus,benthopelagic,Modified following Ellis et al. (2012).,111,111,NA,NA,NA,NA,NA,NA,NA,NA,111,111
+Echiichthys vipera,benthic,Modified following CEFAS (2007).,NA,NA,NA,NA,NA,111,111,111,NA,NA,NA,NA
+Blennius ocellaris,benthic,Modified following Heesen et al. (2015).,NA,NA,NA,NA,NA,NA,111,111,NA,NA,NA,NA
+Lipophrys pholis,benthic,,NA,NA,NA,111,111,111,111,111,NA,NA,NA,NA
+Parablennius gattorugine,benthic,Modified following Heesen et al. (2015).,NA,NA,NA,111,111,111,111,NA,NA,NA,NA,NA
+Callionymus lyra,benthic,,NA,NA,NA,111,111,111,111,111,NA,NA,NA,NA
+Callionymus maculatus,benthic,Modified following CEFAS (2007).,NA,NA,NA,111,111,111,111,111,NA,NA,NA,NA
+Trachurus trachurus,pelagic,Modified following Ellis et al. (2012).,NA,NA,NA,NA,111,111,NA,NA,NA,NA,NA,NA
+Cepola macrophthalma,benthic,Modified following Heesen et al. (2015).,NA,NA,NA,NA,NA,111,111,111,NA,NA,NA,NA
+Aphia minuta,benthopelagic,,NA,NA,NA,NA,NA,111,111,111,NA,NA,NA,NA
+Crystallogobius linearis,benthopelagic,Modified following Heesen et al. (2015).,NA,NA,NA,NA,111,111,111,111,111,NA,NA,NA
+Gobius cobitis,benthic,,NA,NA,NA,NA,111,111,111,NA,NA,NA,NA,NA
+Gobius niger,benthic,,NA,NA,NA,NA,111,111,111,111,NA,NA,NA,NA
+Gobius paganellus,benthic,Modified following CEFAS (2007).,NA,NA,NA,111,111,111,NA,NA,NA,NA,NA,NA
+Pomatoschistus microps,benthic,Modified following Heesen et al. (2015).,NA,NA,NA,111,111,111,111,NA,NA,NA,NA,NA
+Pomatoschistus minutus,benthic,Modified following Heesen et al. (2015).,NA,NA,NA,111,111,111,111,NA,NA,NA,NA,NA
+Pomatoschistus pictus,benthic,Modified following Heesen et al. (2015).,NA,NA,NA,111,111,111,111,NA,NA,NA,NA,NA
+Gobiusculus flavescens,benthopelagic,Modified following Heesen et al. (2015).,NA,NA,NA,NA,111,111,111,NA,NA,NA,NA,NA
+Centrolabrus exoletus,benthopelagic,,NA,NA,NA,NA,111,111,111,NA,NA,NA,NA,NA
+Ctenolabrus rupestris,benthopelagic,Modified following CEFAS (2007).,NA,NA,NA,NA,111,111,111,111,NA,NA,NA,NA
+Labrus bergylta,benthopelagic,"Modified following CEFAS (2007), Heesen et al. (2015).",NA,NA,NA,NA,111,111,111,NA,NA,NA,NA,NA
+Labrus mixtus,benthopelagic,,NA,NA,NA,NA,111,111,111,NA,NA,NA,NA,NA
+Symphodus melops,benthopelagic,,NA,NA,NA,NA,111,111,111,NA,NA,NA,NA,NA
+Dicentrarchus labrax,benthopelagic,Modified following Heesen et al. (2015).,NA,111,111,111,111,NA,NA,NA,NA,NA,NA,NA
+Agonus cataphractus,benthic,Modified following Heesen et al. (2015).,NA,111,111,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Micrenophrys lilljeborgii,benthic,Modified following Heesen et al. (2015).,NA,NA,111,111,111,111,111,NA,NA,NA,NA,NA
+Mullus surmuletus,benthic,,NA,NA,NA,NA,111,111,111,NA,NA,NA,NA,NA
+Scomber scombrus,pelagic,Modified following Heesen et al. (2015).,NA,NA,NA,NA,111,111,111,NA,NA,NA,NA,NA
+Thunnus thynnus,pelagic,Does not spawn in UK waters.,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Pagrus pagrus,benthopelagic,,NA,NA,NA,111,111,111,NA,NA,NA,NA,NA,NA
+Spondyliosoma cantharus,benthopelagic,Modified following Heesen et al. (2015).,NA,NA,NA,111,111,111,NA,NA,NA,NA,NA,NA
+Arnoglossus laterna,benthic,,NA,NA,NA,NA,111,111,111,NA,NA,NA,NA,NA
+Glyptocephalus cynoglossus,benthic,Modified following CEFAS (2007).,NA,NA,111,111,111,111,111,NA,NA,NA,NA,NA
+Hippoglossoides platessoides,benthic,,NA,NA,111,111,111,NA,NA,NA,NA,NA,NA,NA
+Limanda limanda,benthic,Modified following CEFAS (2007).,NA,NA,111,111,111,111,NA,NA,NA,NA,NA,NA
+Microstomus kitt,benthic,Modified following Pawson (1995).,NA,NA,111,111,111,111,111,NA,NA,NA,NA,NA
+Platichthys flesus,benthic,Modified following Heesen et al. (2015).,NA,111,111,111,NA,NA,NA,NA,NA,NA,NA,NA
+Pleuronectes platessa,benthic,Modified following Heesen et al. (2015).,NA,111,111,111,NA,NA,NA,NA,NA,NA,NA,NA
+Scophthalmus maximus,benthic,Modified following Heesen et al. (2015).,NA,NA,NA,111,111,111,111,NA,NA,NA,NA,NA
+Scophthalmus rhombus,benthic,Modified following Heesen et al. (2015).,NA,NA,NA,111,111,111,111,NA,NA,NA,NA,NA
+Phrynorhombus norvegicus,benthic,Modified following Heesen et al. (2015).,NA,NA,111,111,111,111,NA,NA,NA,NA,NA,NA
+Zeugopterus punctatus,benthic,Modified following CEFAS (2007).,NA,111,111,111,111,NA,NA,NA,NA,NA,NA,NA
+Buglossidium luteum,benthic,Modified following Heesen et al. (2015).,NA,NA,111,111,111,111,111,NA,NA,NA,NA,NA
+Microchirus variegatus,benthic,,NA,NA,111,111,111,NA,NA,NA,NA,NA,NA,NA
+Pegusa lascaris,benthic,Modified following Heesen et al. (2015).,NA,NA,NA,NA,111,111,111,111,111,NA,NA,NA
+Solea solea,benthic,,NA,NA,111,111,111,NA,NA,NA,NA,NA,NA,NA
+Chelidonichthys cuculus,benthic,Modified following CEFAS (2007).,NA,NA,NA,111,111,111,111,111,NA,NA,NA,NA
+Chelidonichthys lucerna,benthic,Modified following CEFAS (2007).,NA,NA,NA,NA,111,111,111,NA,NA,NA,NA,NA
+Eutrigla gurnardus,benthic,Modified following CEFAS (2007).,NA,NA,NA,111,111,111,111,111,NA,NA,NA,NA
+Chelidonichthys lastoviza,benthic,Modified following CEFAS (2007).,NA,NA,NA,NA,NA,111,111,111,NA,NA,NA,NA
+Nerophis lumbriciformis,benthic,Modified following CEFAS (2007).,NA,NA,NA,NA,111,111,111,111,NA,NA,NA,NA
+Syngnathus acus,benthic,Modified following CEFAS (2007).,NA,NA,NA,NA,111,111,111,111,NA,NA,NA,NA
+Syngnathus rostellatus,benthic,Modified following CEFAS (2007).,NA,NA,NA,NA,111,111,111,111,NA,NA,NA,NA
+Zeus faber,benthopelagic,Modified following CEFAS (2007).,NA,NA,NA,NA,NA,111,111,111,NA,NA,NA,NA
+Capros aper,benthopelagic,Modified following CEFAS (2007).,NA,NA,NA,NA,NA,111,111,111,NA,NA,NA,NA
+Lamna nasus,pelagic,Does not breed in survey area,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Mustelus asterias,benthopelagic,Modified following Heesen et al. (2015).,NA,NA,NA,111,111,111,111,111,111,NA,NA,NA
+Squalus acanthias,benthopelagic,Modified following Heesen et al. (2015).,NA,NA,NA,NA,NA,NA,NA,111,111,111,111,111
+Scyliorhinus canicula,benthic,Modified following Heesen et al. (2015).,NA,NA,NA,NA,NA,111,111,NA,NA,NA,NA,NA
+Scyliorhinus stellaris,benthic,Modified following Heesen et al. (2015); breeds all year.,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Leucoraja naevus,benthic,Modified following Pawson (1995).,111,111,111,111,111,NA,NA,NA,NA,NA,NA,111
+Raja brachyura,benthic,Modified following Heesen et al. (2015).,NA,NA,111,111,111,111,111,NA,NA,NA,NA,NA
+Raja clavata,benthic,Modified following Ellis et al. (2012).,NA,111,111,111,111,111,111,111,111,NA,NA,NA
+Raja microocellata,benthic,Unknown,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Raja montagui,benthic,Modified following Heesen et al. (2015).,NA,111,111,111,111,111,NA,NA,NA,NA,NA,NA
+Raja undulata,benthic,Modified following Heesen et al. (2015).,NA,NA,111,111,111,111,NA,NA,NA,NA,NA,NA
+Alosa alosa,pelagic,Does not breed in survey area,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Anguilla anguilla,benthic,Does not breed in survey area,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Conger conger,benthic,Does not breed in survey area,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Barbatula barbatula,NA,Does not breed in survey area,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Gasterosteus aculeatus,NA,Does not breed in survey area,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Gobio gobio,NA,Does not breed in survey area,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Lampetra fluviatilis,NA,Does not breed in survey area,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Phoxinus phoxinus,NA,Does not breed in survey area,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Salmo salar,NA,Does not breed in survey area,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+Salmo trutta,NA,Does not breed in survey area,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
