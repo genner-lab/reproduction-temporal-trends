@@ -1,8 +1,4 @@
 #!/usr/bin/env sh
-# add to .bashrc: `export PATH=~/.local/bin:$PATH`
-# python3 -m pip install --upgrade pip
-# python3 -m pip install cutadapt
-# python3 -m pip install --upgrade cutadapt
 
 # set project
 PROJ="temp/processing"
@@ -39,11 +35,19 @@ mkdir -p "$DIR"/fastq "$DIR"/logs "$DIR"/processed-reads/sense/dmplx "$DIR"/proc
 # most of the stats can be found in cutadapt logs
 echo -e "stat,reads\npf,\nprimer,\nbarcode,\ntrim,\nfilter,\nmerge,\nchim,\nhomol," > "$DIR"/logs/stats.csv
 
-# make a symlink to the fastq files
-# check md5sums
-# check md5sums in data/sequencing-master.csv
-md5sum "$DIR"/fastq/R1.fastq.gz
-md5sum "$DIR"/fastq/R2.fastq.gz
+# make a symlink to the fastq files (only for current lib)
+# lib1
+ln -s -r ../data/SeaDNA_Teleo02_01_S1_L001_R1_001.fastq.gz "$DIR"/fastq/R1.fastq.gz
+ln -s -r ../data/SeaDNA_Teleo02_01_S1_L001_R2_001.fastq.gz "$DIR"/fastq/R2.fastq.gz
+# lib2
+ln -s -r ../data/SeaDNA_Teleo02_02_S2_L001_R1_001.fastq.gz "$DIR"/fastq/R1.fastq.gz
+ln -s -r ../data/SeaDNA_Teleo02_02_S2_L001_R2_001.fastq.gz "$DIR"/fastq/R2.fastq.gz
+# lib3
+ln -s -r ../data/SeaDNA_Tele02_Lib03v2_R1.fastq.gz "$DIR"/fastq/R1.fastq.gz
+ln -s -r ../data/SeaDNA_Tele02_Lib03v2_R2.fastq.gz "$DIR"/fastq/R2.fastq.gz
+# lib4
+ln -s -r ../data/SeaDNA_Teleo02_Lib-04_S2_L001_R1_001.fastq.gz "$DIR"/fastq/R1.fastq.gz
+ln -s -r ../data/SeaDNA_Teleo02_Lib-04_S2_L001_R2_001.fastq.gz "$DIR"/fastq/R2.fastq.gz
 
 # filter reads by orientation (need to wait for fwd to finish before doing rev)
 # dumps all reads with fwd and rev primer on sense/antisense strands into "$DIR"/sense or "$DIR"/antisense
