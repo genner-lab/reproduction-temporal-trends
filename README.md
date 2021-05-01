@@ -74,26 +74,32 @@ Only needs to be done once at the beginning.
 * Run `scripts/primer-fit.R` to generate primer efficiency scores.
 
 
+### 3: Retrieve data
+
+* Run `scripts/get-data.sh` to retrieve the fastq datasets from NCBI Sequence Read Archive (SRA) and verify the md5sums.
+
+
 ## Process libraries
 
 These steps are carried out for each sequencing library individually. Each script  at the top, has a choice of libraries to run (lib1, lib2, lib3, lib4) , and they must be run one at a time, after restarting R or a new bash session.
 
-### 3: Prepare barcodes for demultiplexing
+
+### 4: Prepare barcodes for demultiplexing
 
 * Run `scripts/prep-barcodes.R` to generate sample barcodes for demultiplexing.
 
 
-### 4: Demultiplex reads with cutadapt
+### 5: Demultiplex reads with cutadapt
 
 * Run `scripts/demultiplex.sh` to reorientate, demultiplex, trim and obtain stats.
 
 
-### 5: Denoise reads
+### 6: Denoise reads
 
 * Run `scripts/dada2.R` to denoise reads and generate OTU tables.
 
 
-### 6: Assign taxonomy
+### 7: Assign taxonomy
 
 The taxonomy assignment step is a bit of a pain because in requires jumping back and forth between a bash (`scripts/taxonomic-assignment.sh`) and an R script (`scripts/taxonomic-assignment.R`) to process the data at different steps, and for each library. Follow the step numbers in the scripts. Process each library one at a time through all steps. Eventually I will turn this into one executable script, and run assignment only once on the combined outputs for all libraries.
 
@@ -122,7 +128,7 @@ The taxonomy assignment step is a bit of a pain because in requires jumping back
 * [R] Get sample level assignments (Step 12 in `scripts/taxonomic-assignment.R`). This step additionally requires the 'plates' and 'events.master' objects to have been created by running the `scripts/prep-barcodes.R` script (for same libraries).
 
 
-### 7: Combine assignment results for all libraries
+### 8: Combine assignment results for all libraries
 
 * [R] Combine taxonomic assignment results for all libraries (Step 13 in `scripts/taxonomic-assignment.R`). Must run taxonomic assignment for all libraries first before combining results.
 
@@ -130,15 +136,17 @@ The taxonomy assignment step is a bit of a pain because in requires jumping back
 ## Statistical analysis
 
 
-### 8: Season trends
+### 9: Seasonal trends
 
 * Run `scripts/seasonal-trends.R` to generate the seasonal PCoA plots for eDNA and demersal trawl.
 
-### 9: Spawning 
+
+### 10: Spawning 
 
 * Run `scripts/spawning.R` to generate the logistic regression plots for fish spawning months and eDNA abundance.
 
-### 10: Adundance correlations & models
+
+### 11: Adundance correlations & models
 
 * Run `scripts/adults.R` to generate the abundance correlation plots for eDNA and demersal trawl for adult fishes, as well the results of the  zero-inflated negative-binomial generalised-linear mixed-model.
 
@@ -146,7 +154,8 @@ The taxonomy assignment step is a bit of a pain because in requires jumping back
 
 * Run `scripts/eggs.R` to generate the abundance correlation plots for eDNA and egg ichthyoplankton.
 
-### 11: Supporting information
+
+### 12: Supporting information
 
 * Run `scripts/supporting-info.R` to generate the supporting info plots and tables.
 
