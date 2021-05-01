@@ -78,6 +78,8 @@ Only needs to be done once at the beginning.
 
 * Run `scripts/get-data.sh` to retrieve the fastq datasets from NCBI Sequence Read Archive (SRA) and verify the md5sums.
 
+* Project URL on SRA is [https://www.ncbi.nlm.nih.gov/sra/PRJNA725897](https://www.ncbi.nlm.nih.gov/sra/PRJNA725897).
+
 
 ## Process libraries
 
