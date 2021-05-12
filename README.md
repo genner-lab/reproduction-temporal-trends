@@ -1,9 +1,10 @@
 [![DOI](https://zenodo.org/badge/362065020.svg)](https://zenodo.org/badge/latestdoi/362065020)
 
-# Reproduction explains environmental DNA variation in a temperate marine fish community
+# Reproduction explains marine eDNA variation
 
-Code for the marine eDNA fish reproduction paper published as: Collins, R.A., Baillie, C., Halliday, N.C., Rainbird, S., Sims, D.W., Mariani, S. & Genner, M.J. (2021) Reproduction explains environmental DNA variation
-in a temperate marine fish community. _Insert Journal_. [https://doi.org/xxx](https://doi.org/xxx).
+Code for: Collins, R.A., Baillie, C., Halliday, N.C., Rainbird, S., Sims, D.W., Mariani, S. & Genner, M.J. (2021) Reproduction explains marine eDNA variation. _Insert Journal_. [https://doi.org/xxx](https://doi.org/xxx).
+
+To support this code, a full data description and summary can be found at [assets/data-description.pdf](assets/data-description.pdf).
 
 ## Important notes
 
