@@ -1,10 +1,10 @@
 #!/usr/bin/env sh
 
 # make data data dir
-mkdir ../temp/data
+mkdir -p temp/data
 
 # cd
-cd ../temp/data
+cd temp/data
 
 # get the R1
 tail -n +2 ../../assets/sequencing-master.csv | cut -d "," -f 9 | sort | uniq | xargs wget
