@@ -1,5 +1,61 @@
 [![DOI](https://zenodo.org/badge/362065020.svg)](https://zenodo.org/badge/latestdoi/362065020)
 
+```
+# new code and instructions - july 2021
+
+# clone repos
+git clone https://github.com/genner-lab/reproduction-temporal-trends.git
+cd reproduction-temporal-trends
+git clone https://github.com/genner-lab/meta-fish-pipe.git
+git clone https://github.com/genner-lab/refseq-reflib.git
+
+# get data
+cd meta-fish-pipe
+mkdir temp
+Rscript -e "renv::restore()"
+scripts/get-data.sh
+
+# copy across sample sheet and contam file
+cp assets/sequencing-master.csv meta-fish-pipe/assets/sequencing-master.csv
+cp assets/contaminants-exclude.csv meta-fish-pipe/assets/contaminants-exclude.csv
+
+# in R get the reflib
+library("tidyverse")
+library("ape")
+source("https://raw.githubusercontent.com/genner-lab/meta-fish-lib/main/scripts/references-load-remote.R")
+source("https://raw.githubusercontent.com/genner-lab/meta-fish-lib/main/scripts/references-clean.R")
+readr::write_csv(reflib.orig, file="meta-fish-pipe/assets/meta-fish-lib-v243.csv")
+
+# grab the latest reference library (run in R)
+library("tidyverse")
+library("ape")
+source("https://raw.githubusercontent.com/genner-lab/meta-fish-lib/main/scripts/references-load-remote.R")
+source("https://raw.githubusercontent.com/genner-lab/meta-fish-lib/main/scripts/references-clean.R")
+locals <- read_csv(file="assets/local-12s.csv")
+reflib.orig %>% bind_rows(locals) %>% write_csv(file="meta-fish-pipe/assets/meta-fish-lib-v243.csv")
+
+
+
+
+# get refseq
+cd refseq-reflib
+mkdir temp references
+Rscript -e "renv::restore()"
+scripts/download.sh
+scripts/extract.R -p tele02
+scripts/annotate.R -s 42 -p tele02
+rm temp/duckdb
+cd ..
+cp refseq-reflib/references/refseq206-annotated-tele02.csv meta-fish-pipe/assets/refseq206-annotated-tele02.csv
+
+
+```
+
+
+
+
+
+
 # Reproduction explains marine eDNA variation
 
 Code for: Collins, R.A., Baillie, C., Halliday, N.C., Rainbird, S., Sims, D.W., Mariani, S. & Genner, M.J. (2021) Reproduction explains marine eDNA variation. _Insert Journal_. [https://doi.org/xxx](https://doi.org/xxx).
