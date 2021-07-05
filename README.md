@@ -9,33 +9,18 @@ cd reproduction-temporal-trends
 git clone https://github.com/genner-lab/meta-fish-pipe.git
 git clone https://github.com/genner-lab/refseq-reflib.git
 
-# get data
-cd meta-fish-pipe
-mkdir temp
+# restore R libs
 Rscript -e "renv::restore()"
+# get data from ncbi
 scripts/get-data.sh
 
-# copy across sample sheet and contam file
-cp assets/sequencing-master.csv meta-fish-pipe/assets/sequencing-master.csv
-cp assets/contaminants-exclude.csv meta-fish-pipe/assets/contaminants-exclude.csv
-
-# in R get the reflib
-library("tidyverse")
-library("ape")
-source("https://raw.githubusercontent.com/genner-lab/meta-fish-lib/main/scripts/references-load-remote.R")
-source("https://raw.githubusercontent.com/genner-lab/meta-fish-lib/main/scripts/references-clean.R")
-readr::write_csv(reflib.orig, file="meta-fish-pipe/assets/meta-fish-lib-v243.csv")
-
-# grab the latest reference library (run in R)
+# in R get the uk fish reference library (and add local seqs)
 library("tidyverse")
 library("ape")
 source("https://raw.githubusercontent.com/genner-lab/meta-fish-lib/main/scripts/references-load-remote.R")
 source("https://raw.githubusercontent.com/genner-lab/meta-fish-lib/main/scripts/references-clean.R")
 locals <- read_csv(file="assets/local-12s.csv")
 reflib.orig %>% bind_rows(locals) %>% write_csv(file="meta-fish-pipe/assets/meta-fish-lib-v243.csv")
-
-
-
 
 # get refseq
 cd refseq-reflib
@@ -47,6 +32,72 @@ scripts/annotate.R -s 42 -p tele02
 rm temp/duckdb
 cd ..
 cp refseq-reflib/references/refseq206-annotated-tele02.csv meta-fish-pipe/assets/refseq206-annotated-tele02.csv
+
+
+# copy across sample sheet and contam file to the pipeline lib
+cp assets/sequencing-master.csv meta-fish-pipe/assets/sequencing-master.csv
+cp assets/contaminants-exclude.csv meta-fish-pipe/assets/contaminants-exclude.csv
+
+
+# set up pipeline
+cd meta-fish-pipe
+Rscript -e "renv::restore()"
+scripts/session-info.sh  -r assets/refseq206-annotated-tele02.csv -c assets/meta-fish-lib-v243.csv
+
+# set up libs
+scripts/prepare-libraries.sh -p tele02 -l lib1
+scripts/prepare-libraries.sh -p tele02 -l lib2
+scripts/prepare-libraries.sh -p tele02 -l lib3
+scripts/prepare-libraries.sh -p tele02 -l lib4
+
+cd ..
+# make symlinks LIB1
+ln -s -r temp/data/SeaDNA_Teleo02_01_S1_L001_R1_001.fastq.gz meta-fish-pipe/temp/processing/tele02-lib1/fastq/R1.fastq.gz
+ln -s -r temp/data/SeaDNA_Teleo02_01_S1_L001_R2_001.fastq.gz meta-fish-pipe/temp/processing/tele02-lib1/fastq/R2.fastq.gz
+# make symlinks LIB2
+ln -s -r temp/data/SeaDNA_Teleo02_02_S2_L001_R1_001.fastq.gz meta-fish-pipe/temp/processing/tele02-lib2/fastq/R1.fastq.gz
+ln -s -r temp/data/SeaDNA_Teleo02_02_S2_L001_R2_001.fastq.gz meta-fish-pipe/temp/processing/tele02-lib2/fastq/R2.fastq.gz
+# make symlinks LIB3
+ln -s -r temp/data/SeaDNA_Tele02_Lib03v2_R1.fastq.gz.1 meta-fish-pipe/temp/processing/tele02-lib3/fastq/R1.fastq.gz
+ln -s -r temp/data/SeaDNA_Tele02_Lib03v2_R2.fastq.gz.1 meta-fish-pipe/temp/processing/tele02-lib3/fastq/R2.fastq.gz
+# make symlinks LIB4
+ln -s -r temp/data/SeaDNA_Teleo02_Lib-04_S2_L001_R1_001.fastq.gz meta-fish-pipe/temp/processing/tele02-lib4/fastq/R1.fastq.gz
+ln -s -r temp/data/SeaDNA_Teleo02_Lib-04_S2_L001_R2_001.fastq.gz meta-fish-pipe/temp/processing/tele02-lib4/fastq/R2.fastq.gz
+
+# copy across sample sheet and contam file to the pipeline lib
+cp assets/sequencing-master.csv meta-fish-pipe/assets/sequencing-master.csv
+cp assets/contaminants-exclude.csv meta-fish-pipe/assets/contaminants-exclude.csv
+
+# generate barcodes
+cd meta-fish-pipe
+scripts/generate-barcodes.R -p tele02 -l lib1 -f 18 -r 20 -m assets/sequencing-master.csv
+scripts/generate-barcodes.R -p tele02 -l lib2 -f 18 -r 20 -m assets/sequencing-master.csv
+scripts/generate-barcodes.R -p tele02 -l lib3 -f 18 -r 20 -m assets/sequencing-master.csv
+scripts/generate-barcodes.R -p tele02 -l lib4 -f 18 -r 20 -m assets/sequencing-master.csv
+
+# demultiplex
+scripts/demultiplex.sh -p tele02 -l lib1 -f AAACTCGTGCCAGCCACC -r GGGTATCTAATCCCAGTTTG -t 8 -m 18
+scripts/demultiplex.sh -p tele02 -l lib2 -f AAACTCGTGCCAGCCACC -r GGGTATCTAATCCCAGTTTG -t 8 -m 18
+scripts/demultiplex.sh -p tele02 -l lib3 -f AAACTCGTGCCAGCCACC -r GGGTATCTAATCCCAGTTTG -t 8 -m 18
+scripts/demultiplex.sh -p tele02 -l lib4 -f AAACTCGTGCCAGCCACC -r GGGTATCTAATCCCAGTTTG -t 8 -m 18
+
+# denoise with dada2
+scripts/dada2.R -p tele02 -l lib1
+scripts/dada2.R -p tele02 -l lib2
+scripts/dada2.R -p tele02 -l lib3
+scripts/dada2.R -p tele02 -l lib4
+
+# generate stats
+scripts/generate-stats.sh -p tele02 -l lib1 -t 8
+scripts/generate-stats.sh -p tele02 -l lib2 -t 8
+scripts/generate-stats.sh -p tele02 -l lib3 -t 8
+scripts/generate-stats.sh -p tele02 -l lib4 -t 8
+
+# run taxonomic assignment
+scripts/taxonomic-assignment.sh -t 8 -p tele02
+
+# assemble results
+scripts/assemble-results.R -c assets/contaminants-exclude.csv
 
 
 ```
