@@ -33,11 +33,9 @@ rm temp/duckdb
 cd ..
 cp refseq-reflib/references/refseq206-annotated-tele02.csv meta-fish-pipe/assets/refseq206-annotated-tele02.csv
 
-
 # copy across sample sheet and contam file to the pipeline lib
 cp assets/sequencing-master.csv meta-fish-pipe/assets/sequencing-master.csv
 cp assets/contaminants-exclude.csv meta-fish-pipe/assets/contaminants-exclude.csv
-
 
 # set up pipeline
 cd meta-fish-pipe
@@ -63,10 +61,6 @@ ln -s -r temp/data/SeaDNA_Tele02_Lib03v2_R2.fastq.gz.1 meta-fish-pipe/temp/proce
 # make symlinks LIB4
 ln -s -r temp/data/SeaDNA_Teleo02_Lib-04_S2_L001_R1_001.fastq.gz meta-fish-pipe/temp/processing/tele02-lib4/fastq/R1.fastq.gz
 ln -s -r temp/data/SeaDNA_Teleo02_Lib-04_S2_L001_R2_001.fastq.gz meta-fish-pipe/temp/processing/tele02-lib4/fastq/R2.fastq.gz
-
-# copy across sample sheet and contam file to the pipeline lib
-cp assets/sequencing-master.csv meta-fish-pipe/assets/sequencing-master.csv
-cp assets/contaminants-exclude.csv meta-fish-pipe/assets/contaminants-exclude.csv
 
 # generate barcodes
 cd meta-fish-pipe
