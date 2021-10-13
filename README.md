@@ -20,7 +20,7 @@ library("ape")
 source("https://raw.githubusercontent.com/genner-lab/meta-fish-lib/main/scripts/references-load-remote.R")
 source("https://raw.githubusercontent.com/genner-lab/meta-fish-lib/main/scripts/references-clean.R")
 locals <- read_csv(file="assets/local-12s.csv")
-reflib.orig %>% bind_rows(locals) %>% write_csv(file="meta-fish-pipe/assets/meta-fish-lib-v243.csv")
+reflib.orig %>% bind_rows(locals) %>% write_csv(file="meta-fish-pipe/assets/meta-fish-lib-v245.csv")
 
 # get refseq
 cd refseq-reflib
@@ -29,9 +29,8 @@ Rscript -e "renv::restore()"
 scripts/download.sh
 scripts/extract.R -p tele02
 scripts/annotate.R -s 42 -p tele02
-rm temp/duckdb
 cd ..
-cp refseq-reflib/references/refseq206-annotated-tele02.csv meta-fish-pipe/assets/refseq206-annotated-tele02.csv
+cp refseq-reflib/references/refseq208-annotated-tele02.csv meta-fish-pipe/assets/refseq208-annotated-tele02.csv
 
 # copy across sample sheet and contam file to the pipeline lib
 cp assets/sequencing-master.csv meta-fish-pipe/assets/sequencing-master.csv
@@ -40,7 +39,7 @@ cp assets/contaminants-exclude.csv meta-fish-pipe/assets/contaminants-exclude.cs
 # set up pipeline
 cd meta-fish-pipe
 Rscript -e "renv::restore()"
-scripts/session-info.sh  -r assets/refseq206-annotated-tele02.csv -c assets/meta-fish-lib-v243.csv
+scripts/session-info.sh  -r assets/refseq208-annotated-tele02.csv -c assets/meta-fish-lib-v245.csv
 
 # set up libs
 scripts/prepare-libraries.sh -p tele02 -l lib1
