@@ -20,7 +20,7 @@ library("ape")
 source("https://raw.githubusercontent.com/genner-lab/meta-fish-lib/main/scripts/references-load-remote.R")
 source("https://raw.githubusercontent.com/genner-lab/meta-fish-lib/main/scripts/references-clean.R")
 locals <- read_csv(file="assets/local-12s.csv")
-reflib.orig %>% bind_rows(locals) %>% write_csv(file="meta-fish-pipe/assets/meta-fish-lib-v245.csv")
+reflib.orig %>% bind_rows(locals) %>% mutate(subphylum="Chordata") %>% rename(phylum=subphylum) %>% write_csv(file="meta-fish-pipe/assets/meta-fish-lib-v245.csv")
 
 # get refseq
 cd refseq-reflib
