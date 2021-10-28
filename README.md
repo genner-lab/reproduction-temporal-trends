@@ -92,6 +92,8 @@ scripts/taxonomic-assignment.sh -t 8 -p tele02
 # assemble results
 scripts/assemble-results.R -c assets/contaminants-exclude.csv
 
+# run primer efficiency calculation script
+scripts/primer-fit.R
 
 ```
 
@@ -244,7 +246,7 @@ The taxonomy assignment step is a bit of a pain because in requires jumping back
 * Run `scripts/seasonal-trends.R` to generate the seasonal PCoA plots for eDNA and demersal trawl.
 
 
-### 10: Spawning 
+### 10: Spawning
 
 * Run `scripts/spawning.R` to generate the logistic regression plots for fish spawning months and eDNA abundance.
 

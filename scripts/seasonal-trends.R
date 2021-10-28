@@ -8,7 +8,7 @@ dir.create(here("temp/results/figures"))
 
 
 #### EDNA ####
- 
+
 # collapse
 edna.collapsed <- edna.filt %>% collapse_taxonomy(rmfw=TRUE,lifestage="Adult",collapse=FALSE)
 

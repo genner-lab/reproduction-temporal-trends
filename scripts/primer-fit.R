@@ -5,11 +5,31 @@
 source(here::here("scripts/funs-bioinformatics.R"))
 library("DECIPHER")
 
-### subset the custom reference library
-# must have generated reference library with `join-references.R`
+### add primers to custom reference library
 
 # load refs
-custom.refs <- read_csv(here("temp/reference-library/custom-refs.csv"),guess_max=99999,col_types=cols())
+custom.refs <- read_csv(here("meta-fish-pipe/temp/taxonomic-assignment/custom-reference-library.csv"),guess_max=99999,col_types=cols())
+
+# combine
+ref.fas <- tab2fas(custom.refs,seqcol="nucleotides",namecol="dbid")
+
+# write out to temp file for hmm
+ape::write.FASTA(ref.fas,file=here("temp/custom-refs-temp.fasta"))
+
+# subset the markers with hmmer
+setwd(here("temp"))
+# with primers (taberlet is inside Miya)
+miya.fas.primers <- run_hmmer3(dir=here("temp"), infile="custom-refs-temp.fasta", prefix="12s.miya.primers", evalue="10", coords="env")
+setwd(here())
+
+# convert to char
+miya.char.primers <- lapply(as.character(miya.fas.primers),paste,collapse="")
+custom.refs %<>% mutate(
+    nucleotidesFrag.12s.miya.primers=as.character(miya.char.primers[match(dbid,names(miya.char.primers))]), 
+    nucleotidesFrag.12s.miya.primers=str_replace_all(nucleotidesFrag.12s.miya.primers,"NULL","NA"),
+    nucleotidesFrag.12s.miya.primers=dplyr::na_if(nucleotidesFrag.12s.miya.primers,"NA"),
+    lengthFrag.12s.miya.primers=str_length(nucleotidesFrag.12s.miya.primers)
+    )
 
 # prefixes for subset
 prefix <- "12s.miya.primers"
@@ -33,7 +53,7 @@ reflib.fas.ali <- ips::mafft(reflib.fas,exec="mafft",method="retree 2",maxiterat
 reflib.fas.ali.char <- lapply(as.character(as.list(reflib.fas.ali)),paste,collapse="")
 starts <- reflib.fas.ali.char[!grepl("^-",reflib.fas.ali.char)]
 starts.ends <- starts[!grepl("-$",starts)]
-length(starts.ends)
+#length(starts.ends)
 
 # now filter those out of reflib
 reflib.red %<>% filter(dbid %in% names(starts.ends))
@@ -41,7 +61,7 @@ reflib.red %<>% filter(dbid %in% names(starts.ends))
 # prepare the reference library as named character vector
 seqs.dealign <- toupper(str_replace_all(starts.ends,"-",""))
 names(seqs.dealign) <- names(starts.ends)
-length(seqs.dealign)
+#length(seqs.dealign)
 
 # set primers
 # tele02
@@ -71,12 +91,13 @@ mifish.u.res <- mcmapply(function(x) extract_eff(x,ppair=mifish.u,temp=60,proc=1
 effic.df <- dplyr::bind_rows(
     enframe(tele02.res,name="dbid",value="efficiency") %>% mutate(primerSet="tele02"),
     enframe(mifish.u.mod.res,name="dbid",value="efficiency") %>% mutate(primerSet="mifish-u-mod"),
-    enframe(mifish.u.res,name="dbid",value="efficiency") %>% mutate(primerSet="mifish-u"))
+    enframe(mifish.u.res,name="dbid",value="efficiency") %>% mutate(primerSet="mifish-u")
+    )
 
 # make results dir
 dir.create(here("temp/results"),recursive=TRUE)
 
-# format and 
+# format and write out
 effic.df %>% mutate(species=pull(custom.refs,sciNameValid)[match(dbid,pull(custom.refs,dbid))]) %>% 
     arrange(primerSet,species,desc(efficiency)) %>% 
     select(primerSet,dbid,species,efficiency) %>%

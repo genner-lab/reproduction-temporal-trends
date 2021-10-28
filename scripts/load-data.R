@@ -5,11 +5,31 @@ source(here::here("scripts/funs-stats.R"))
 
 ### LOAD DATA
 
+# load hashes
+events.hashes <- bind_rows(lapply(list.files(here("meta-fish-pipe/temp/processing"),full.names=TRUE,recursive=TRUE,pattern="events-hashes.csv"),read_csv)) %>% 
+    rename(sampleHash=hashLabel)
+
 # load data
-edna.all <- read_csv(file=here("temp/results/results-by-marker.csv"))
+edna.all <- read_csv(file=here("meta-fish-pipe/results/fishes-by-sample.csv"))
+
+# add replicate info from hashes
+edna.all %<>% left_join(events.hashes,by=c("primerSet","library","eventID","sampleHash")) %>% 
+    mutate(replicatePCR="pcr1")
+
+# add sample details to read data
+events.df <- read_csv(file=here("assets/events-master.csv")) %>% 
+    mutate(eventDate=ymd(paste(year,month,day,sep="-"))) %>% 
+    filter(sampleType=="Water") %>%
+    distinct(eventID,partnerID,localityID,localitySite,minimumDepthInMeters,eventDate)
+
+# join
+edna.all %<>% left_join(events.df,by="eventID")
 
 # filter events without data, recode the date, and remove the locality stuff (will add back later), add taxonRank
-edna.filt <- edna.all %>% filter(!grepl("Blank",replicateFilter)) %>% mutate(eventDate=ymd(eventDate)) %>% select(-localityID,-localitySite,-minimumDepthInMeters) %>% mutate(taxonRank="species")
+edna.filt <- edna.all %>% 
+    select(-localityID,-localitySite,-minimumDepthInMeters) %>% 
+    mutate(taxonRank="species") %>% 
+    rename(species=assignedName,nreads=nReads)
 
 # load primer bias
 primer.bias <- read_csv(file=here("temp/results/primer-efficiency-results.csv"))
