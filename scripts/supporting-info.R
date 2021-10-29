@@ -115,39 +115,9 @@ lists.joined %>% summarise(totalTrad=sum(totalTrad),totalEdna=sum(totalEdna))
 
 ### BIOINFORMATICS SUMMARY TABLE ###
 
-# make nums
-nums <- seq_along(1:4)
-
-# fun to load stats summary tables
-load_stats <- function(n) {
-    dir.add <- here("temp/processing",paste0("tele02-lib",n),"logs/stats.csv")
-    stat.table <- read_csv(dir.add)
-    stat.table %<>% rename_with(~ str_replace_all(.,"reads",paste0("lib",n)))
-return(stat.table)
-}
-
-# load up unassigned reads
-unassigned <- read_csv(here("temp/results/unassigned-results-all.csv")) %>% 
-    group_by(primerSet,library) %>%
-    summarise(nreads=sum(nreads),.groups="drop") %>%
-    filter(primerSet=="tele02") %>%
-    select(-primerSet) %>%
-    mutate(stat="unassigned") %>%
-    pivot_wider(names_from=library,values_from=nreads)
-
-# load up assigned reads
-assigned <- read_csv(here("temp/results/fish-assignments.csv")) %>%
-    filter(primerSet=="tele02" & assigned==TRUE & isContaminated==FALSE) %>%
-    group_by(library) %>%
-    summarise(nreads=sum(totalReads),.groups="drop") %>%
-    mutate(stat="assigned") %>%
-    pivot_wider(names_from=library,values_from=nreads)
-
-
-# load the data and make a table
-purrr::map(nums,load_stats) %>% 
-    reduce(left_join) %>%
-    bind_rows(assigned,unassigned) %>%
+# load and format
+read_csv(here("meta-fish-pipe/results/stats-summary.csv")) %>% 
+    pivot_wider(names_from=library,values_from=nreads) %>%
     mutate_all(~prettyNum(.,big.mark=",")) %>%
     xtable(caption="blahhh", digits=c(0,0,0,0,0,0)) %>%
     print.xtable(include.rownames=FALSE,booktabs=TRUE,sanitize.text.function=identity,caption.placement="top")
@@ -163,7 +133,7 @@ p <- edna.filt %>% filter(primerSet=="tele02" & partnerID=="MBA") %>%
     summarise(nreads=sum(nreads),.groups="drop") %>%
         ggplot(aes(x=yearMonth,y=nreads)) +
         geom_boxplot(outlier.shape=NA,color="darkgrey") +
-        geom_point(aes(color=yearMonth),position="jitter") +
+        geom_jitter(aes(color=yearMonth),width=0.3,height=0) +# ,position="jitter"
         scale_y_log10() +
         scale_x_discrete(labels=c("2017\nFeb","2017\nMar","2017\nApr","2017\nMay","2017\nJun","2017\nJul","2017\nAug","2017\nSep","2017\nOct","2017\nNov","2018\nFeb","2018\nMar","2018\nApr")) +
         ggthemes::theme_clean(base_size=12) +
@@ -258,84 +228,27 @@ p <- nmds.tbl %>% plot_nmds(var="depth")
 ggsave(filename=here("temp/results/figures/depth-nmds.svg"),plot=p,width=200,height=170,units="mm")
 
 
-### PLOT PCA VARIABLES ###
-
-# first run `seasonal-trends.R` to get the matrices for the PCA
-
-# plot edna
-p <- plot.PCA(PCA(edna.mat,graph=FALSE,scale.unit=FALSE),choix="var",select="contrib 12",ggoptions=list(size=2,circle.lwd=0.3,circle.lty=3,line.lty=3,line.lwd=0.3)) + theme(plot.title=element_blank(),axis.title=element_text(size=8))
-plot(p)
-ggsave(filename=here("temp/results/figures/edna-pcoa-plot-resids.svg"),plot=p,width=130,height=80,units="mm")
-
-
-# plot trawl
-p <- plot.PCA(PCA(trad.mat,graph=FALSE,scale.unit=FALSE),choix="var",select="contrib 12",ggoptions=list(size=2,circle.lwd=0.3,circle.lty=3,line.lty=3,line.lwd=0.3)) + theme(plot.title=element_blank(),axis.title=element_text(size=8))
-plot(p)
-ggsave(filename=here("temp/results/figures/trawl-pcoa-plot.svg"),plot=p,width=130,height=80,units="mm")
-
-
-### MODEL DIAGNOSTICS AND OUTPUT ###
-
-# first run `adults.R` to get the glmmTMB model results
-
-# plot pdf
-pdf(file=here("temp/results/figures/model-performance.pdf"),height=12,width=18)
-perm
-dev.off()
-
-# tabulate model output
-m0 %>% 
-    broom.mixed::tidy() %>% 
-    mutate_if(is.character,~str_replace_all(.,"_","")) %>%
-    xtable(caption="blahhh",display=c("s","s","s","s","s","f","f","f","e")) %>% 
-    print.xtable(include.rownames=FALSE,booktabs=TRUE,sanitize.text.function=identity,caption.placement="top",size="scriptsize")
-
-
 ### NEGATIVE CONTROLS ###
 
-# subset the controls
-summary <- edna.all %>% filter(partnerID=="MBA" | is.na(partnerID)) %>% filter(primerSet=="tele02") %>%
-    select(library,eventID,sampleHash,replicateFilter,species,nreads) %>% 
-    mutate(isControl=if_else(grepl("Blank",replicateFilter),"TRUE",".")) %>%
-    group_by(library,eventID,sampleHash,isControl) %>%
-    summarise(sampleReads=sum(nreads),.groups="drop") %>%
-    arrange(library,desc(sampleReads))
+# table of negative controls
+read_csv(here("meta-fish-pipe/results/controls-summary.csv")) %>% 
+    mutate(partnerID=str_split_fixed(eventID,"-",4)[,1]) %>% 
+    filter(partnerID!="EA") %>%
+    group_by(library,blankType,sampleHash) %>%
+    summarise(sampleReads=sum(nReads),.groups="drop") %>%
+    arrange(library,blankType,desc(sampleReads)) %>% 
+    mutate(blankType=str_replace_all(blankType,"Blank"," blank"), blankType=str_replace_all(blankType,"Well","Tag")) %>%
+    rename(Library=library,`Control type`=blankType,`Sample ID`=sampleHash,`Number reads`=sampleReads) %>%
+    mutate_if(is.numeric,~prettyNum(.,big.mark=",")) %>%
+    xtable(caption="blahhh") %>% 
+    print.xtable(include.rownames=FALSE,booktabs=TRUE,sanitize.text.function=identity,caption.placement="top",size="scriptsize")
 
-# load up the data and choose marker
-plates <- read_csv(file=here("assets/sequencing-master.csv"))
-plates %<>% filter(primerSet=="tele02")
-trlens <- c(18,20)# tele02
-
-# trim tags
-plates %<>% mutate(barcodesFwd=str_replace_all(oligoFwd,"N",""), 
-    barcodesFwd=str_trunc(barcodesFwd, width=10, side="right", ellipsis=""),
-    barcodesRev=str_replace_all(oligoRev,"N",""),
-    barcodesRev=str_trunc(barcodesRev, width=10, side="right", ellipsis=""),
-    primerFwd=str_trunc(oligoFwd, width=trlens[1], side="left", ellipsis=""),
-    primerRev=str_trunc(oligoRev, width=trlens[2], side="left", ellipsis=""),
-    labelFwd=str_trunc(str_replace_all(oligoFwd,"N",""), width=unique(str_length(str_replace_all(oligoFwd,"N",""))-trlens[1]), side="right", ellipsis=""),
-    labelRev=str_trunc(str_replace_all(oligoRev,"N",""), width=unique(str_length(str_replace_all(oligoRev,"N",""))-trlens[2]), side="right", ellipsis=""))
-
-# cat the labels
-plates %<>% mutate(senseLabel=paste(eventID,primerSet,library,replicateFilter,replicatePCR,labelFwd,sep="."), antisenseLabel=paste(eventID,primerSet,library,replicateFilter,replicatePCR,labelRev,sep="."))
-# create the hashes
-library("openssl")
-plates %<>% mutate(senseLabelMD5=str_trunc(md5(senseLabel),width=12,side="right",ellipsis=""), antisenseLabelMD5=str_trunc(md5(antisenseLabel),width=12,side="right",ellipsis="")) 
-# rename as hashLabel
-plates %<>% mutate(hashLabel=if_else(senseLabelMD5 == antisenseLabelMD5, as.character(senseLabelMD5), "NA"))
-
-# filter the blanks
-# subset the ones not with reads in samples 
-sub.plates <- plates %>% 
-    filter(grepl("Blank",replicateFilter)) %>% 
-    filter(!grepl("EA",eventID)) %>%
-    filter(!hashLabel %in% pull(summary,sampleHash)) %>% 
-    select(library,eventID,hashLabel) %>% 
-    mutate(isControl="TRUE",sampleReads=0) %>%
-    rename(sampleHash=hashLabel)
+### READS AND SAMPLES ###
 
 # table of samples
-summary %>% filter(isControl==".") %>% 
+edna.filt %>% filter(partnerID=="MBA") %>%
+    group_by(library,eventID,sampleHash) %>%
+    summarise(sampleReads=sum(nreads),.groups="drop") %>%
     group_by(library) %>% 
     summarise(nSamples=n_distinct(sampleHash),meanReads=mean(sampleReads),sd=sd(sampleReads),.groups="drop") %>%
     mutate(meanReads=round(meanReads,digits=0),sd=round(sd,digits=0)) %>%
@@ -343,16 +256,3 @@ summary %>% filter(isControl==".") %>%
     mutate_if(is.numeric,~prettyNum(.,big.mark=",")) %>%
     xtable(caption="blahhh") %>% 
     print.xtable(include.rownames=FALSE,booktabs=TRUE,sanitize.text.function=identity,caption.placement="top")
-
-# table of negative controls
-summary %>% 
-    bind_rows(sub.plates) %>%
-    filter(isControl!=".") %>%
-    mutate(eventID=if_else(!grepl("Blank",eventID),"FieldBlank",eventID)) %>%
-    arrange(library,eventID,desc(sampleReads)) %>%
-    select(-isControl) %>% #count()
-    mutate(eventID=str_replace_all(eventID,"Blank"," blank"), eventID=str_replace_all(eventID,"Well","Tag")) %>%
-    rename(Library=library,`Control type`=eventID,`Sample ID`=sampleHash,`Number reads`=sampleReads) %>%
-    mutate_if(is.numeric,~prettyNum(.,big.mark=",")) %>%
-    xtable(caption="blahhh") %>% 
-    print.xtable(include.rownames=FALSE,booktabs=TRUE,sanitize.text.function=identity,caption.placement="top",size="scriptsize")

@@ -117,7 +117,13 @@ m0 <- glmmTMB(
 summary(m0)
 m0 %>% broom.mixed::tidy()
 
-
+# tabulate model output
+m0 %>% 
+    broom.mixed::tidy() %>% 
+    mutate_if(is.character,~str_replace_all(.,"_","")) %>%
+    xtable(caption="blahhh",display=c("s","s","s","s","s","f","f","f","e")) %>% 
+    print.xtable(include.rownames=FALSE,booktabs=TRUE,sanitize.text.function=identity,caption.placement="top",size="scriptsize")
+    
 # run DHARMa residual sims on m0
 sim <- simulateResiduals(fittedModel=m0, plot=TRUE, n=1000, seed=42)
 plot(sim)
@@ -132,6 +138,11 @@ testZeroInflation(sim,plot=TRUE)# tests if there are more zeros than expected
 # run performance checks
 perm <- performance::check_model(m0)
 perm
+
+# plot pdf
+pdf(file=here("temp/results/figures/model-performance.pdf"),height=12,width=18)
+perm
+dev.off()
 
 # drop the spawning month
 m1 <- update(m0,.~. -spawningByMonthUK)
