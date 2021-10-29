@@ -95,6 +95,27 @@ scripts/assemble-results.R -c assets/contaminants-exclude.csv
 # run primer efficiency calculation script
 scripts/primer-fit.R
 
+# generate the seasonal PCoA plots for eDNA and demersal trawl.
+scripts/seasonal-trends.R
+
+# generate the logistic regression plots for fish spawning months and eDNA abundance.
+scripts/spawning.R
+
+# generate the abundance correlation plots for eDNA and demersal trawl for adult fishes, as well the results of the  zero-inflated negative-binomial generalised-linear mixed-model.
+scripts/adults.R
+
+# generate the abundance correlation plots for eDNA and larval ichthyoplankton.
+scripts/larvae.R
+
+# generate the abundance correlation plots for eDNA and egg ichthyoplankton.
+scripts/eggs.R
+
+# generate the supporting info plots and tables.
+scripts/supporting-info.R 
+
+# generate the supporting info maps.
+scripts/maps.R
+
 ```
 
 
