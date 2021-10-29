@@ -9,7 +9,7 @@
     ]
   },
   "Bioconductor": {
-    "Version": "3.13"
+    "Version": "3.14"
   },
   "Packages": {
     "BH": {
@@ -198,10 +198,10 @@
     },
     "Rcpp": {
       "Package": "Rcpp",
-      "Version": "1.0.6",
+      "Version": "1.0.7",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "dbb5e436998a7eba5a9d682060533338"
+      "Hash": "dab19adae4440ae55aa8a9d238b246bb"
     },
     "RcppArmadillo": {
       "Package": "RcppArmadillo",
@@ -263,10 +263,10 @@
     },
     "TMB": {
       "Package": "TMB",
-      "Version": "1.7.20",
+      "Version": "1.7.22",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "db241456677ae165b3095b6df5d79009"
+      "Hash": "d1a16b564d4d43d01943002981f45ab6"
     },
     "XML": {
       "Package": "XML",
@@ -353,10 +353,10 @@
     },
     "bayestestR": {
       "Package": "bayestestR",
-      "Version": "0.10.0",
+      "Version": "0.11.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "7a2e04a052a8bcb13c611a04a668a0f1"
+      "Hash": "f76eeb3c2f50ab82a6d80453b0d4d7ff"
     },
     "bit": {
       "Package": "bit",
@@ -580,6 +580,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "d1b8b1a821ee564a3515fa6c6d5c52dc"
+    },
+    "datawizard": {
+      "Package": "datawizard",
+      "Version": "0.2.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "8edf85932d64cb9c08db13ab73670cc9"
     },
     "dbplyr": {
       "Package": "dbplyr",
@@ -882,10 +889,10 @@
     },
     "glmmTMB": {
       "Package": "glmmTMB",
-      "Version": "1.1.1",
+      "Version": "1.1.2.3",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "a80f2daa365634591bb6861752de269e"
+      "Hash": "02720139ead64147c931bf5b2a91ef45"
     },
     "glue": {
       "Package": "glue",
@@ -1022,10 +1029,10 @@
     },
     "insight": {
       "Package": "insight",
-      "Version": "0.14.2",
+      "Version": "0.14.4",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "0689376def355bb17a59457d9eba818a"
+      "Hash": "0732fdb500e89408a440c182cb43121d"
     },
     "ips": {
       "Package": "ips",
@@ -1316,10 +1323,10 @@
     },
     "performance": {
       "Package": "performance",
-      "Version": "0.7.2",
+      "Version": "0.8.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "03c5de3063c92d71cc15ddb4eecd9aa2"
+      "Hash": "e83826fc69fe190eb5ef62012259541a"
     },
     "permute": {
       "Package": "permute",
@@ -1533,10 +1540,10 @@
     },
     "rfishbase": {
       "Package": "rfishbase",
-      "Version": "3.1.8",
+      "Version": "3.1.9",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "b70a512d3fdc7f21076530e5daa19883"
+      "Hash": "5c33659a57c16dd0292234bf6e3d89f3"
     },
     "rio": {
       "Package": "rio",
