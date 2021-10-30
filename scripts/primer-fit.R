@@ -3,14 +3,14 @@
 
 # load libs
 source(here::here("scripts/funs-bioinformatics.R"))
-library("DECIPHER")
 
 ### add primers to custom reference library
 
 # load refs
-custom.refs <- read_csv(here("meta-fish-pipe/temp/taxonomic-assignment/custom-reference-library.csv"),guess_max=99999,col_types=cols())
+custom.refs <- read_csv(here("meta-fish-pipe/temp/taxonomic-assignment/custom-reference-library.csv"),guess_max=99999,show_col_types=FALSE,lazy=FALSE)
 
-# combine
+# convert
+writeLines("\nWriting out fasta and running hmmer3 - may take a few minutes.")
 ref.fas <- tab2fas(custom.refs,seqcol="nucleotides",namecol="dbid")
 
 # write out to temp file for hmm
@@ -47,6 +47,7 @@ reflib.fas <- tab2fas(reflib.red,seqcol=paste0("nucleotidesFrag.",prefix),nameco
 reflib.fas <- rm_ns(bin=reflib.fas)
 
 # align
+writeLines("\nNow aligning sequences and running DECIPHER - may take a few minutes.")
 reflib.fas.ali <- ips::mafft(reflib.fas,exec="mafft",method="retree 2",maxiterate=2)
 
 # convert to char and filter out those with gap chars at the ends
@@ -72,20 +73,15 @@ mifish.u.mod <- c("GCCGGTAAAACTCGTGCCAGC","CATAGTGGGGTATCTAATCCCAGTTTG")
 mifish.u <- c("GTCGGTAAAACTCGTGCCAGC","CATAGTGGGGTATCTAATCCCAGTTTG")
 
 
-# function to run AmplifyDNA to get primer efficiencies
-extract_eff <- function(qseq,ppair,temp,proc){
-    res <- DECIPHER::AmplifyDNA(primers=ppair,myDNAStringSet=qseq,maxProductSize=300,annealingTemp=temp,P=5e-7,minEfficiency=0,taqEfficiency=TRUE,maxDistance=0.4,maxGaps=2,processors=proc)
-    if(length(res)==0) {out <- NA}
-    else {out <- res@ranges@NAMES[1]}
-    out <- as.numeric(str_replace_all(out,"%.*",""))/100
-    names(out) <- names(qseq)
-    return(out)
-}
-
 # run AmplifyDNA for each primer
+suppressPackageStartupMessages(
+    library("DECIPHER")
+    )
+# run on 8 cores
 tele02.res <- mcmapply(function(x) extract_eff(x,ppair=tele02,temp=54,proc=1), seqs.dealign, mc.cores=8, SIMPLIFY=TRUE, USE.NAMES=TRUE)
 mifish.u.mod.res <- mcmapply(function(x) extract_eff(x,ppair=mifish.u.mod,temp=60,proc=1), seqs.dealign, mc.cores=8, SIMPLIFY=TRUE, USE.NAMES=TRUE)
 mifish.u.res <- mcmapply(function(x) extract_eff(x,ppair=mifish.u,temp=60,proc=1), seqs.dealign, mc.cores=8, SIMPLIFY=TRUE, USE.NAMES=TRUE)
+detach("package:DECIPHER")
 
 # combine the dataframes
 effic.df <- dplyr::bind_rows(
@@ -95,10 +91,15 @@ effic.df <- dplyr::bind_rows(
     )
 
 # make results dir
-dir.create(here("temp/results"),recursive=TRUE)
+if(!dir.exists(here("temp/results"))){
+    dir.create(here("temp/results"),recursive=TRUE)
+}
 
 # format and write out
 effic.df %>% mutate(species=pull(custom.refs,sciNameValid)[match(dbid,pull(custom.refs,dbid))]) %>% 
     arrange(primerSet,species,desc(efficiency)) %>% 
     select(primerSet,dbid,species,efficiency) %>%
     write_csv(here("temp/results/primer-efficiency-results.csv"))
+
+# report
+writeLines("\nPrimer efficiencies written to 'temp/results/primer-efficiency-results.csv'.")
