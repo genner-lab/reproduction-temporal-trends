@@ -4,8 +4,9 @@
 source(here::here("scripts/load-data.R"))
 
 # make a figures output directory if needed
-dir.create(here("temp/results/figures"))
-
+if(!dir.exists(here("temp/results/figures"))){
+    dir.create(here("temp/results/figures"),recursive=TRUE)
+}
 
 #### EDNA ####
 
@@ -17,7 +18,6 @@ edna.expanded <- edna.collapsed %>% expand_and_summarise(sppdf=distinct(edna.col
 
 # filter format df
 edna.org <- edna.expanded %>% 
-    filter(partnerID=="MBA" & localityID!="WHIT") %>% 
     group_by(species) %>% 
     mutate(sppn=sum(nReads)) %>% 
     ungroup() %>%
@@ -68,12 +68,12 @@ p <- edna.pc1.tib %>%
         geom_smooth(aes(x=as.numeric(yearMonth)),method="gam",formula=y~s(x,bs="cs",k=4),color="#737145",alpha=0.5,fill="gray90") + 
         ggthemes::theme_clean(base_size=12) +
         labs(x="Date", y="eDNA PCoA-2 scores")
-plot(p)
+#plot(p)
 ggsave(filename=here("temp/results/figures/edna-pcoa.svg"),plot=p,width=130,height=80,units="mm")
 
 # SUPPORTING - plot edna PCA VARIABLES 
 p <- plot.PCA(PCA(edna.mat,graph=FALSE,scale.unit=FALSE),choix="var",select="contrib 12",ggoptions=list(size=2,circle.lwd=0.3,circle.lty=3,line.lty=3,line.lwd=0.3)) + theme(plot.title=element_blank(),axis.title=element_text(size=8))
-plot(p)
+#plot(p)
 ggsave(filename=here("temp/results/figures/edna-pcoa-plot-resids.svg"),plot=p,width=130,height=80,units="mm")
 
 
@@ -140,10 +140,10 @@ p <- trad.pc1.tib %>%
         geom_smooth(aes(x=as.numeric(month)),method="gam",formula=y~s(x,bs="cs",k=4),color="#737145",alpha=0.5,fill="gray90") +
         ggthemes::theme_clean(base_size=12) +
         labs(x="Date", y="Demersal trawl PCoA-1 scores")
-plot(p)
+#plot(p)
 ggsave(filename=here("temp/results/figures/trawl-pcoa.svg"),plot=p,width=130,height=80,units="mm")
 
 # SUPPORTING - plot trawl PCA VARIABLES
 p <- plot.PCA(PCA(trad.mat,graph=FALSE,scale.unit=FALSE),choix="var",select="contrib 12",ggoptions=list(size=2,circle.lwd=0.3,circle.lty=3,line.lty=3,line.lwd=0.3)) + theme(plot.title=element_blank(),axis.title=element_text(size=8))
-plot(p)
+#plot(p)
 ggsave(filename=here("temp/results/figures/trawl-pcoa-plot.svg"),plot=p,width=130,height=80,units="mm")

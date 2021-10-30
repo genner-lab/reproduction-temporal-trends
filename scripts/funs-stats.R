@@ -1,21 +1,23 @@
 #!/usr/bin/env Rscript
 
 # load libs
-library("here")
-library("tidyverse")
-library("lubridate")
-library("RColorBrewer")
-library("magrittr")
-library("ggthemes")
-library("FactoMineR")
-library("ggridges")
-library("broom")
-library("rfishbase")
-library("glmmTMB")
-library("DHARMa")
-library("emmeans")
-library("performance")
-library("vegan")
+suppressPackageStartupMessages({
+    library("here")
+    library("tidyverse")
+    library("lubridate")
+    #library("RColorBrewer")
+    library("magrittr")
+    library("ggthemes")
+    library("FactoMineR")
+    #library("ggridges")
+    library("broom")
+    library("rfishbase")
+    library("glmmTMB")
+    library("DHARMa")
+    library("emmeans")
+    library("performance")
+    library("vegan")
+})
 
 ### LOAD FUNCTIONS
 
@@ -158,246 +160,246 @@ add_groups_vars <- function(df,spatialgroup,temporalgroup) {
 }
 
 
-# function to process and collapse the trad and eDNA data
-process_annotate <- function(df,eventdf,method,summary_func,spatialgroup,temporalgroup){
-    events.sub <- eventdf %>% distinct(eventID,localityID,localitySite,year,month,day)
-    if(method=="traditional") {
-        completed.df <- df %>% 
-            group_by(partnerID,eventID,eventDate,fieldNumber,species) %>% 
-            summarise(individualCount=sum(individualCount),weightInGrams=sum(weightInGrams),.groups="drop") %>% # merge dup species after rename
-            group_by(partnerID) %>%
-            tidyr::complete(tidyr::nesting(eventID,eventDate,fieldNumber),species,fill=list(individualCount=0,weightInGrams=0)) %>% # add missing zeros for all species by partnerID. Nesting allows only those combinations of samples present in the dataset
-            ungroup() %>%
-            mutate(localityID=pull(events.sub,localityID)[match(eventID,pull(events.sub,eventID))],# add the localitySite details
-            localitySite=pull(events.sub,localitySite)[match(eventID,pull(events.sub,eventID))],
-            year=pull(events.sub,year)[match(eventID,pull(events.sub,eventID))],
-            month=pull(events.sub,month)[match(eventID,pull(events.sub,eventID))],
-            day=pull(events.sub,day)[match(eventID,pull(events.sub,eventID))]) 
-        #
-        if(temporalgroup=="month") {
-            completed.df %<>% mutate(temporalGroup=paste(year,month,"1",sep="-")) } 
-        else if(temporalgroup=="day"){
-            completed.df %<>% mutate(temporalGroup=paste(year,month,day,sep="-")) } 
-        else stop(writeLines("temporalgroup must be 'month' or 'day'."))
-        if(spatialgroup=="locality") {
-            completed.df %<>% mutate(spatialGroup=localityID) } 
-        else if(spatialgroup=="partner") {
-            completed.df %<>% mutate(spatialGroup=partnerID) } 
-        else if(spatialgroup=="site"){
-            completed.df %<>% mutate(spatialGroup=localitySite) } 
-        else stop(writeLines("spatialgroup must be 'locality', 'site', or 'partner'."))
-        #
-        completed.df %<>%
-            group_by(partnerID,spatialGroup,temporalGroup,species) %>% # collapse to get summarised numbers/grams per location period
-            summarise(individualsByGroup=ceiling(summary_func(individualCount,na.rm=TRUE)),weightInGramsByGroup=ceiling(summary_func(weightInGrams,na.rm=TRUE)),nReplicates=n(),.groups="drop") %>% 
-            group_by(partnerID,spatialGroup,temporalGroup) %>%  #
-            mutate(individualsByGroupTotal=sum(individualsByGroup,na.rm=TRUE),weightInGramsByGroupTotal=sum(weightInGramsByGroup)) %>% # get totals over events (after mean)
-            ungroup() %>% 
-            mutate(individualsByGroupProportion=individualsByGroup/individualsByGroupTotal,individualsByGroupRate=individualsByGroup/nReplicates) %>% # get prop INDIVS, prop WEIGHTS
-            mutate(weightInGramsByGroupProportion=weightInGramsByGroup/weightInGramsByGroupTotal,weightInGramsByGroupRate=weightInGramsByGroup/nReplicates) %>%
-            mutate(weightInGramsByGroup=if_else(partnerID=="EA",NaN,weightInGramsByGroup),weightInGramsByGroupTotal=if_else(partnerID=="EA",NaN,weightInGramsByGroupTotal),weightInGramsByGroupRate=if_else(partnerID=="EA",NaN,weightInGramsByGroupRate)) %>% # clean nans
-            mutate_all(~replace(.,is.nan(.),NA)) %>% # clean nans
-            #select(partnerID,location,period,species,individualCount,eventIndividualCount,eventIndividualProportion,weightInGrams,eventWeightInGrams,eventWeightInGramsProportion,nReplicates) %>% 
-            mutate(methodology="traditional")
-    #
-    } else if(method=="edna") {
-        completed.df <- df %>% 
-            group_by(primerSet,partnerID,eventID,eventDate,replicateFilter,replicatePCR,sampleHash,species) %>% 
-            summarise(nreads=sum(nreads,na.rm=TRUE),.groups="drop") %>% # merge dup species after rename
-            group_by(partnerID) %>%
-            tidyr::complete(tidyr::nesting(primerSet,eventID,eventDate,replicateFilter,replicatePCR,sampleHash),species,fill=list(nreads=0)) %>% # add missing zeros for all species by partnerID. Nesting allows only those combinations of samples present in the dataset
-            ungroup() %>% 
-            mutate(localityID=pull(events.sub,localityID)[match(eventID,pull(events.sub,eventID))],# add the localitySite details
-            localitySite=pull(events.sub,localitySite)[match(eventID,pull(events.sub,eventID))],
-            year=pull(events.sub,year)[match(eventID,pull(events.sub,eventID))],
-            month=pull(events.sub,month)[match(eventID,pull(events.sub,eventID))],
-            day=pull(events.sub,day)[match(eventID,pull(events.sub,eventID))])
-        #
-        if(temporalgroup=="month") {
-            completed.df %<>% mutate(temporalGroup=paste(year,month,"1",sep="-")) } 
-        else if(temporalgroup=="day"){
-            completed.df %<>% mutate(temporalGroup=paste(year,month,day,sep="-")) } 
-        else stop(writeLines("temporalgroup must be 'month' or 'day'."))
-        if(spatialgroup=="locality") {
-            completed.df %<>% mutate(spatialGroup=localityID) } 
-        else if(spatialgroup=="partner") {
-            completed.df %<>% mutate(spatialGroup=partnerID) } 
-        else if(spatialgroup=="site"){
-            completed.df %<>% mutate(spatialGroup=localitySite) } 
-        else stop(writeLines("spatialgroup must be 'locality', 'site', or 'partner'."))
-        #
-        completed.df %<>%
-            rename(nReads=nreads) %>%
-            group_by(sampleHash) %>%  # get sum of reads per sample replicate
-            mutate(readsBySampleTotal=sum(nReads,na.rm=TRUE)) %>% 
-            ungroup() %>% 
-            group_by(partnerID,spatialGroup,temporalGroup,species) %>% # collapse to get summarised collapsed reads per location/period
-            mutate(readsByGroup=ceiling(summary_func(nReads,na.rm=TRUE)),nGroupReplicates=n()) %>%
-            ungroup() %>% 
-            group_by(partnerID,spatialGroup,temporalGroup) %>%  # get sum of collapsed reads per event
-            mutate(readsByGroupTotal=sum(nReads,na.rm=TRUE)) %>% # get totals over events (after mean)
-            ungroup() %>% 
-            mutate(readsByGroupProportion=readsByGroup/readsByGroupTotal) %>% # get prop READS
-            mutate(methodology="edna") #%>%
-            #select(methodology,primerSet,partnerID,eventID,localityID,localitySite) %>% 
-    } else stop(writeLines("Method must be 'traditional' or 'edna'."))
-    return(completed.df)
-}
+## function to process and collapse the trad and eDNA data
+#process_annotate <- function(df,eventdf,method,summary_func,spatialgroup,temporalgroup){
+#    events.sub <- eventdf %>% distinct(eventID,localityID,localitySite,year,month,day)
+#    if(method=="traditional") {
+#        completed.df <- df %>% 
+#            group_by(partnerID,eventID,eventDate,fieldNumber,species) %>% 
+#            summarise(individualCount=sum(individualCount),weightInGrams=sum(weightInGrams),.groups="drop") %>% # merge dup species after rename
+#            group_by(partnerID) %>%
+#            tidyr::complete(tidyr::nesting(eventID,eventDate,fieldNumber),species,fill=list(individualCount=0,weightInGrams=0)) %>% # add missing zeros for all species by partnerID. Nesting allows only those combinations of samples present in the dataset
+#            ungroup() %>%
+#            mutate(localityID=pull(events.sub,localityID)[match(eventID,pull(events.sub,eventID))],# add the localitySite details
+#            localitySite=pull(events.sub,localitySite)[match(eventID,pull(events.sub,eventID))],
+#            year=pull(events.sub,year)[match(eventID,pull(events.sub,eventID))],
+#            month=pull(events.sub,month)[match(eventID,pull(events.sub,eventID))],
+#            day=pull(events.sub,day)[match(eventID,pull(events.sub,eventID))]) 
+#        #
+#        if(temporalgroup=="month") {
+#            completed.df %<>% mutate(temporalGroup=paste(year,month,"1",sep="-")) } 
+#        else if(temporalgroup=="day"){
+#            completed.df %<>% mutate(temporalGroup=paste(year,month,day,sep="-")) } 
+#        else stop(writeLines("temporalgroup must be 'month' or 'day'."))
+#        if(spatialgroup=="locality") {
+#            completed.df %<>% mutate(spatialGroup=localityID) } 
+#        else if(spatialgroup=="partner") {
+#            completed.df %<>% mutate(spatialGroup=partnerID) } 
+#        else if(spatialgroup=="site"){
+#            completed.df %<>% mutate(spatialGroup=localitySite) } 
+#        else stop(writeLines("spatialgroup must be 'locality', 'site', or 'partner'."))
+#        #
+#        completed.df %<>%
+#            group_by(partnerID,spatialGroup,temporalGroup,species) %>% # collapse to get summarised numbers/grams per location period
+#            summarise(individualsByGroup=ceiling(summary_func(individualCount,na.rm=TRUE)),weightInGramsByGroup=ceiling(summary_func(weightInGrams,na.rm=TRUE)),nReplicates=n(),.groups="drop") %>% 
+#            group_by(partnerID,spatialGroup,temporalGroup) %>%  #
+#            mutate(individualsByGroupTotal=sum(individualsByGroup,na.rm=TRUE),weightInGramsByGroupTotal=sum(weightInGramsByGroup)) %>% # get totals over events (after mean)
+#            ungroup() %>% 
+#            mutate(individualsByGroupProportion=individualsByGroup/individualsByGroupTotal,individualsByGroupRate=individualsByGroup/nReplicates) %>% # get prop INDIVS, prop WEIGHTS
+#            mutate(weightInGramsByGroupProportion=weightInGramsByGroup/weightInGramsByGroupTotal,weightInGramsByGroupRate=weightInGramsByGroup/nReplicates) %>%
+#            mutate(weightInGramsByGroup=if_else(partnerID=="EA",NaN,weightInGramsByGroup),weightInGramsByGroupTotal=if_else(partnerID=="EA",NaN,weightInGramsByGroupTotal),weightInGramsByGroupRate=if_else(partnerID=="EA",NaN,weightInGramsByGroupRate)) %>% # clean nans
+#            mutate_all(~replace(.,is.nan(.),NA)) %>% # clean nans
+#            #select(partnerID,location,period,species,individualCount,eventIndividualCount,eventIndividualProportion,weightInGrams,eventWeightInGrams,eventWeightInGramsProportion,nReplicates) %>% 
+#            mutate(methodology="traditional")
+#    #
+#    } else if(method=="edna") {
+#        completed.df <- df %>% 
+#            group_by(primerSet,partnerID,eventID,eventDate,replicateFilter,replicatePCR,sampleHash,species) %>% 
+#            summarise(nreads=sum(nreads,na.rm=TRUE),.groups="drop") %>% # merge dup species after rename
+#            group_by(partnerID) %>%
+#            tidyr::complete(tidyr::nesting(primerSet,eventID,eventDate,replicateFilter,replicatePCR,sampleHash),species,fill=list(nreads=0)) %>% # add missing zeros for all species by partnerID. Nesting allows only those combinations of samples present in the dataset
+#            ungroup() %>% 
+#            mutate(localityID=pull(events.sub,localityID)[match(eventID,pull(events.sub,eventID))],# add the localitySite details
+#            localitySite=pull(events.sub,localitySite)[match(eventID,pull(events.sub,eventID))],
+#            year=pull(events.sub,year)[match(eventID,pull(events.sub,eventID))],
+#            month=pull(events.sub,month)[match(eventID,pull(events.sub,eventID))],
+#            day=pull(events.sub,day)[match(eventID,pull(events.sub,eventID))])
+#        #
+#        if(temporalgroup=="month") {
+#            completed.df %<>% mutate(temporalGroup=paste(year,month,"1",sep="-")) } 
+#        else if(temporalgroup=="day"){
+#            completed.df %<>% mutate(temporalGroup=paste(year,month,day,sep="-")) } 
+#        else stop(writeLines("temporalgroup must be 'month' or 'day'."))
+#        if(spatialgroup=="locality") {
+#            completed.df %<>% mutate(spatialGroup=localityID) } 
+#        else if(spatialgroup=="partner") {
+#            completed.df %<>% mutate(spatialGroup=partnerID) } 
+#        else if(spatialgroup=="site"){
+#            completed.df %<>% mutate(spatialGroup=localitySite) } 
+#        else stop(writeLines("spatialgroup must be 'locality', 'site', or 'partner'."))
+#        #
+#        completed.df %<>%
+#            rename(nReads=nreads) %>%
+#            group_by(sampleHash) %>%  # get sum of reads per sample replicate
+#            mutate(readsBySampleTotal=sum(nReads,na.rm=TRUE)) %>% 
+#            ungroup() %>% 
+#            group_by(partnerID,spatialGroup,temporalGroup,species) %>% # collapse to get summarised collapsed reads per location/period
+#            mutate(readsByGroup=ceiling(summary_func(nReads,na.rm=TRUE)),nGroupReplicates=n()) %>%
+#            ungroup() %>% 
+#            group_by(partnerID,spatialGroup,temporalGroup) %>%  # get sum of collapsed reads per event
+#            mutate(readsByGroupTotal=sum(nReads,na.rm=TRUE)) %>% # get totals over events (after mean)
+#            ungroup() %>% 
+#            mutate(readsByGroupProportion=readsByGroup/readsByGroupTotal) %>% # get prop READS
+#            mutate(methodology="edna") #%>%
+#            #select(methodology,primerSet,partnerID,eventID,localityID,localitySite) %>% 
+#    } else stop(writeLines("Method must be 'traditional' or 'edna'."))
+#    return(completed.df)
+#}
 
 
-# function to join the eDNA and trad survey dataframes
-join_surveys <- function(trad,edna,comparison,minreads){
-    edna.red <- edna %>% rename(count=nReads,eventCount=eventReadCount,eventProportion=eventReadProportion) %>% filter(eventCount>=minreads)
-    if(comparison=="grams") { 
-        trad.red <- trad %>% rename(count=weightInGramsByGroup,eventCount=eventWeightInGrams,eventProportion=eventWeightInGramsProportion) %>% 
-            select(-individualCount,-eventIndividualCount,-eventIndividualProportion)
-        }
-    else if(comparison=="individuals") {
-        trad.red <- trad %>% rename(count=individualCount,eventCount=eventIndividualCount,eventProportion=eventIndividualProportion) %>%
-            select(-weightInGrams,-eventWeightInGrams,-eventWeightInGramsProportion)
-        }
-    else stop(writeLines("Comparison must be 'grams' or individuals'."))
-    trad.edna.comb <- bind_rows(edna.red,trad.red)
-    trad.edna.comb %<>% group_by(partnerID) %>% # now add all the species missing from either the trad or eDNA surveys ... makes some empty events 
-            tidyr::complete(tidyr::nesting(location,period,methodology),species,fill=list(count=0,eventProportion=0)) %>% # fill any remaining combinations not present
-            ungroup() %>% 
-            group_by(location,period,methodology) %>% 
-            fill(nReplicates,eventCount,.direction="downup") %>% ungroup() %>%
-            replace_na(list(eventCount=0,nReplicates=0))
-    return(trad.edna.comb)
-}
+## function to join the eDNA and trad survey dataframes
+#join_surveys <- function(trad,edna,comparison,minreads){
+#    edna.red <- edna %>% rename(count=nReads,eventCount=eventReadCount,eventProportion=eventReadProportion) %>% filter(eventCount>=minreads)
+#    if(comparison=="grams") { 
+#        trad.red <- trad %>% rename(count=weightInGramsByGroup,eventCount=eventWeightInGrams,eventProportion=eventWeightInGramsProportion) %>% 
+#            select(-individualCount,-eventIndividualCount,-eventIndividualProportion)
+#        }
+#    else if(comparison=="individuals") {
+#        trad.red <- trad %>% rename(count=individualCount,eventCount=eventIndividualCount,eventProportion=eventIndividualProportion) %>%
+#            select(-weightInGrams,-eventWeightInGrams,-eventWeightInGramsProportion)
+#        }
+#    else stop(writeLines("Comparison must be 'grams' or individuals'."))
+#    trad.edna.comb <- bind_rows(edna.red,trad.red)
+#    trad.edna.comb %<>% group_by(partnerID) %>% # now add all the species missing from either the trad or eDNA surveys ... makes some empty events 
+#            tidyr::complete(tidyr::nesting(location,period,methodology),species,fill=list(count=0,eventProportion=0)) %>% # fill any remaining combinations not present
+#            ungroup() %>% 
+#            group_by(location,period,methodology) %>% 
+#            fill(nReplicates,eventCount,.direction="downup") %>% ungroup() %>%
+#            replace_na(list(eventCount=0,nReplicates=0))
+#    return(trad.edna.comb)
+#}
 
 
-# function to rank species and subset the dataframe by date
-rank_subset <- function(df,time,rankmethod,n){
-    df.rank <- df %>% group_by(species) %>%
-        mutate(sppProps=sum(count[which(methodology==rankmethod)],na.rm=TRUE)) %>% ungroup() %>%
-        mutate(rank=dense_rank(desc(sppProps))) %>% # dense_rank(desc(sppProps)) # dense_rank(sppProps)
-        select(-sppProps) %>% 
-        mutate(period=ymd(period))
-    if(n=="all"){
-        df.rank <- df.rank
-        }
-    else {
-        df.rank %<>% filter(rank %in% 1:n) 
-        }
-    dur.edna <- df.rank %>% filter(methodology=="edna" & eventCount > 0) %>% distinct(period) %>% arrange(period) %>% pull(period)
-    if(time=="duration"){
-        df.sub <- df.rank %>% filter(period %within% lubridate::interval(start=first(dur.edna),end=last(dur.edna)))
-        }
-    else if(time=="identical"){
-        df.sub <- df.rank %>% filter(period %in% dur.edna)
-        }
-    else if(time=="all"){
-        df.sub <- df.rank
-        }
-    else stop(writeLines("Time must be: 'duration', 'identical', or 'all'."))
-return(df.sub)
-}
+## function to rank species and subset the dataframe by date
+#rank_subset <- function(df,time,rankmethod,n){
+#    df.rank <- df %>% group_by(species) %>%
+#        mutate(sppProps=sum(count[which(methodology==rankmethod)],na.rm=TRUE)) %>% ungroup() %>%
+#        mutate(rank=dense_rank(desc(sppProps))) %>% # dense_rank(desc(sppProps)) # dense_rank(sppProps)
+#        select(-sppProps) %>% 
+#        mutate(period=ymd(period))
+#    if(n=="all"){
+#        df.rank <- df.rank
+#        }
+#    else {
+#        df.rank %<>% filter(rank %in% 1:n) 
+#        }
+#    dur.edna <- df.rank %>% filter(methodology=="edna" & eventCount > 0) %>% distinct(period) %>% arrange(period) %>% pull(period)
+#    if(time=="duration"){
+#        df.sub <- df.rank %>% filter(period %within% lubridate::interval(start=first(dur.edna),end=last(dur.edna)))
+#        }
+#    else if(time=="identical"){
+#        df.sub <- df.rank %>% filter(period %in% dur.edna)
+#        }
+#    else if(time=="all"){
+#        df.sub <- df.rank
+#        }
+#    else stop(writeLines("Time must be: 'duration', 'identical', or 'all'."))
+#return(df.sub)
+#}
 
 
-# function to plot a ridge plot
-plot_ridges <- function(df){
-    pl <- df %>% ggplot(aes(x=period,y=0, height=asin(sqrt(eventProportion)),fill=fct_relevel(methodology,"traditional","edna"))) +
-            geom_ridgeline(alpha=0.5,linetype="blank") +
-            facet_wrap(.~fct_reorder(species,rank),scales="free") +
-            theme_clean(base_size=10) +
-            scale_fill_ptol(name=NULL)
-return(pl)
-}
+## function to plot a ridge plot
+#plot_ridges <- function(df){
+#    pl <- df %>% ggplot(aes(x=period,y=0, height=asin(sqrt(eventProportion)),fill=fct_relevel(methodology,"traditional","edna"))) +
+#            geom_ridgeline(alpha=0.5,linetype="blank") +
+#            facet_wrap(.~fct_reorder(species,rank),scales="free") +
+#            theme_clean(base_size=10) +
+#            scale_fill_ptol(name=NULL)
+#return(pl)
+#}
 
 
-# function to plot correlations
-plot_corrs <- function(df,comparison,transform_func,partition){
-    if(partition==TRUE) {
-        p <- df %>% ggplot(aes(y=transform_func(!!as.name(paste0(comparison,".edna"))),x=transform_func(!!as.name(paste0(comparison,".traditional"))),color=location)) +
-            geom_smooth(method="lm",se=FALSE) +
-            geom_point() +
-            facet_wrap(.~fct_reorder(species,rank),scales="free") +
-            labs(x="Proportion of traditional survey catch (arcsine squareroot transformed)",y="Proportion of eDNA survey catch (arcsine squareroot transformed)") +
-            theme_clean(base_size=10) +
-            scale_color_ptol()
-    } else if (partition==FALSE) {
-        p <- df %>% ggplot(aes(y=transform_func(!!as.name(paste0(comparison,".edna"))),x=transform_func(!!as.name(paste0(comparison,".traditional"))))) +
-            geom_smooth(method="lm",se=TRUE,color="#4477AA",fill="grey90") +
-            geom_point() +
-            facet_wrap(.~fct_reorder(species,rank),scales="free") +
-            labs(x="Proportion of traditional survey catch (arcsine squareroot transformed)",y="Proportion of eDNA survey catch (arcsine squareroot transformed)") +
-            theme_clean(base_size=10)
-    } else stop(writeLines("partition must be: 'TRUE' or 'FALSE'."))
-    return(p)
-}
+## function to plot correlations
+#plot_corrs <- function(df,comparison,transform_func,partition){
+#    if(partition==TRUE) {
+#        p <- df %>% ggplot(aes(y=transform_func(!!as.name(paste0(comparison,".edna"))),x=transform_func(!!as.name(paste0(comparison,".traditional"))),color=location)) +
+#            geom_smooth(method="lm",se=FALSE) +
+#            geom_point() +
+#            facet_wrap(.~fct_reorder(species,rank),scales="free") +
+#            labs(x="Proportion of traditional survey catch (arcsine squareroot transformed)",y="Proportion of eDNA survey catch (arcsine squareroot transformed)") +
+#            theme_clean(base_size=10) +
+#            scale_color_ptol()
+#    } else if (partition==FALSE) {
+#        p <- df %>% ggplot(aes(y=transform_func(!!as.name(paste0(comparison,".edna"))),x=transform_func(!!as.name(paste0(comparison,".traditional"))))) +
+#            geom_smooth(method="lm",se=TRUE,color="#4477AA",fill="grey90") +
+#            geom_point() +
+#            facet_wrap(.~fct_reorder(species,rank),scales="free") +
+#            labs(x="Proportion of traditional survey catch (arcsine squareroot transformed)",y="Proportion of eDNA survey catch (arcsine squareroot transformed)") +
+#            theme_clean(base_size=10)
+#    } else stop(writeLines("partition must be: 'TRUE' or 'FALSE'."))
+#    return(p)
+#}
 
 
-# function to plot glms
-plot_glms <- function(df,compy,compx,transform_func_x,partition,label_y,label_x){
-    df <- df %>% drop_na(any_of(compy)) %>% mutate(binvar=if_else(!!as.name(compy)==TRUE,1,0))
-    if(partition==TRUE) {
-        p <- df %>% 
-        ggplot(aes(x=transform_func_x(!!as.name(compx)),y=binvar)) +
-            geom_smooth(method="glm",method.args=list(family=binomial(link="logit"),na.action=na.omit),se=TRUE,alpha=0.5,color="#4477AA") +
-            geom_rug(data=filter(df,binvar==0),sides="b",alpha=1) +
-            geom_rug(data=filter(df,binvar==1),sides="t",alpha=1) +
-            #geom_line(aes(y=.fitted),color="#4477AA",size=0.75) +
-            #geom_ribbon(aes(ymin=.fitted-1.96*.se.fit, ymax=.fitted+1.96*.se.fit),alpha=0.1) +
-            facet_wrap(.~fct_reorder(species,rank),scales="free") +
-            labs(x=label_x,y=label_y) + # x="Proportion of total eDNA event reads (arcsine squareroot transformed)",y="Pr (breeding month)"
-            ggthemes::theme_clean(base_size=8)
-    } else if (partition==FALSE) {
-        p <- df %>% 
-        ggplot(aes(x=transform_func_x(!!as.name(compx)),y=binvar)) +
-            geom_smooth(method="glm",method.args=list(family=binomial(link="logit"),na.action=na.omit),se=TRUE,alpha=0.2,color="#4477AA") +
-            geom_rug(data=filter(df,binvar==0),sides="b",alpha=0.2) +
-            geom_rug(data=filter(df,binvar==1),sides="t",alpha=0.2) +
-            #geom_line(aes(y=.fitted),color="#4477AA",size=0.75) +
-            #geom_ribbon(aes(ymin=.fitted-1.96*.se.fit, ymax=.fitted+1.96*.se.fit),alpha=0.1) +
-            labs(x=label_x,y=label_y) +
-            ggthemes::theme_clean(base_size=16)
-    } else stop(writeLines("partition must be: 'TRUE' or 'FALSE'."))
-    return(p)
-}
+## function to plot glms
+#plot_glms <- function(df,compy,compx,transform_func_x,partition,label_y,label_x){
+#    df <- df %>% drop_na(any_of(compy)) %>% mutate(binvar=if_else(!!as.name(compy)==TRUE,1,0))
+#    if(partition==TRUE) {
+#        p <- df %>% 
+#        ggplot(aes(x=transform_func_x(!!as.name(compx)),y=binvar)) +
+#            geom_smooth(method="glm",method.args=list(family=binomial(link="logit"),na.action=na.omit),se=TRUE,alpha=0.5,color="#4477AA") +
+#            geom_rug(data=filter(df,binvar==0),sides="b",alpha=1) +
+#            geom_rug(data=filter(df,binvar==1),sides="t",alpha=1) +
+#            #geom_line(aes(y=.fitted),color="#4477AA",size=0.75) +
+#            #geom_ribbon(aes(ymin=.fitted-1.96*.se.fit, ymax=.fitted+1.96*.se.fit),alpha=0.1) +
+#            facet_wrap(.~fct_reorder(species,rank),scales="free") +
+#            labs(x=label_x,y=label_y) + # x="Proportion of total eDNA event reads (arcsine squareroot transformed)",y="Pr (breeding month)"
+#            ggthemes::theme_clean(base_size=8)
+#    } else if (partition==FALSE) {
+#        p <- df %>% 
+#        ggplot(aes(x=transform_func_x(!!as.name(compx)),y=binvar)) +
+#            geom_smooth(method="glm",method.args=list(family=binomial(link="logit"),na.action=na.omit),se=TRUE,alpha=0.2,color="#4477AA") +
+#            geom_rug(data=filter(df,binvar==0),sides="b",alpha=0.2) +
+#            geom_rug(data=filter(df,binvar==1),sides="t",alpha=0.2) +
+#            #geom_line(aes(y=.fitted),color="#4477AA",size=0.75) +
+#            #geom_ribbon(aes(ymin=.fitted-1.96*.se.fit, ymax=.fitted+1.96*.se.fit),alpha=0.1) +
+#            labs(x=label_x,y=label_y) +
+#            ggthemes::theme_clean(base_size=16)
+#    } else stop(writeLines("partition must be: 'TRUE' or 'FALSE'."))
+#    return(p)
+#}
 
 
 # function to plot boxes for breeding
-plot_trait_boxes <- function(df,compy,compx,transform_func_y,partition,label_y,label_x){
-    df <- df %>% drop_na(any_of(compx))
-    if(partition==TRUE) {
-        p <- df %>% ggplot(aes(x=!!as.name(compx),y=transform_func_y(!!as.name(compy)))) +
-            #geom_smooth(method="lm",se=TRUE,color="#4477AA") +
-            geom_boxplot() +
-            facet_wrap(.~fct_reorder(species,rank),scales="free") +
-            labs(x=label_x,y=label_y) +
-            ggthemes::theme_clean(base_size=8)
-    } else if (partition==FALSE) {
-        p <- df %>% ggplot(aes(x=!!as.name(compx),y=transform_func_y(!!as.name(compy)))) +
-            #geom_smooth(method="lm",se=TRUE,color="#4477AA") +
-            geom_boxplot() +
-            labs(x=label_x,y=label_y) +
-            ggthemes::theme_clean(base_size=16)
-    } else stop(writeLines("partition must be: 'TRUE' or 'FALSE'."))
-    return(p)
-}
+#plot_trait_boxes <- function(df,compy,compx,transform_func_y,partition,label_y,label_x){
+#    df <- df %>% drop_na(any_of(compx))
+#    if(partition==TRUE) {
+#        p <- df %>% ggplot(aes(x=!!as.name(compx),y=transform_func_y(!!as.name(compy)))) +
+#            #geom_smooth(method="lm",se=TRUE,color="#4477AA") +
+#            geom_boxplot() +
+#            facet_wrap(.~fct_reorder(species,rank),scales="free") +
+#            labs(x=label_x,y=label_y) +
+#            ggthemes::theme_clean(base_size=8)
+#    } else if (partition==FALSE) {
+#        p <- df %>% ggplot(aes(x=!!as.name(compx),y=transform_func_y(!!as.name(compy)))) +
+#            #geom_smooth(method="lm",se=TRUE,color="#4477AA") +
+#            geom_boxplot() +
+#            labs(x=label_x,y=label_y) +
+#            ggthemes::theme_clean(base_size=16)
+#    } else stop(writeLines("partition must be: 'TRUE' or 'FALSE'."))
+#    return(p)
+#}
 
 
 # function to plot breeding correlations
-plot_trait_lms <- function(df,compy,compx,transform_func_y,transform_func_x,label_y,label_x,partition){
-    df <- df %>% drop_na(any_of(compx))
-    if(partition==TRUE) {
-        p <- df %>% ggplot(aes(x=transform_func_x(!!as.name(compx)),y=transform_func_y(!!as.name(compy)))) +
-            geom_smooth(method="lm",se=TRUE,color="#4477AA",na.rm=TRUE) +
-            geom_point(na.rm=TRUE) +
-            facet_wrap(.~fct_reorder(species,rank),scales="free") +
-            labs(x=label_x,y=label_y) +
-            ggthemes::theme_clean(base_size=8)
-    } else if (partition==FALSE) {
-        p <- df %>% ggplot(aes(x=transform_func_x(!!as.name(compx)),y=transform_func_y(!!as.name(compy)))) +
-            geom_smooth(method="lm",se=TRUE,color="#4477AA",na.rm=TRUE) +
-            geom_point(na.rm=TRUE) +
-            labs(x=label_x,y=label_y) +
-            ggthemes::theme_clean(base_size=16)
-    } else stop(writeLines("partition must be: 'TRUE' or 'FALSE'."))
-    return(p)
-}
+#plot_trait_lms <- function(df,compy,compx,transform_func_y,transform_func_x,label_y,label_x,partition){
+#    df <- df %>% drop_na(any_of(compx))
+#    if(partition==TRUE) {
+#        p <- df %>% ggplot(aes(x=transform_func_x(!!as.name(compx)),y=transform_func_y(!!as.name(compy)))) +
+#            geom_smooth(method="lm",se=TRUE,color="#4477AA",na.rm=TRUE) +
+#            geom_point(na.rm=TRUE) +
+#            facet_wrap(.~fct_reorder(species,rank),scales="free") +
+#            labs(x=label_x,y=label_y) +
+#            ggthemes::theme_clean(base_size=8)
+#    } else if (partition==FALSE) {
+#        p <- df %>% ggplot(aes(x=transform_func_x(!!as.name(compx)),y=transform_func_y(!!as.name(compy)))) +
+#            geom_smooth(method="lm",se=TRUE,color="#4477AA",na.rm=TRUE) +
+#            geom_point(na.rm=TRUE) +
+#            labs(x=label_x,y=label_y) +
+#            ggthemes::theme_clean(base_size=16)
+#    } else stop(writeLines("partition must be: 'TRUE' or 'FALSE'."))
+#    return(p)
+#}
 
 
 # function to filter by number of no-catch events
@@ -414,11 +416,11 @@ catch_filter <- function(df,filter,maxprop0){
 }
 
 
-# arcsine squareroot fun
-asin_sqrt <- function(x){
-    xt <- asin(sqrt(x))
-    return(xt)
-}
+## arcsine squareroot fun
+#asin_sqrt <- function(x){
+#    xt <- asin(sqrt(x))
+#    return(xt)
+#}
 
 
 # log plus1 fun
@@ -428,11 +430,11 @@ logplus1 <- function(x){
 }
 
 
-# do nothing fun
-do_nothing <- function(x){
-    xt <- x
-    return(xt)
-}
+## do nothing fun
+#do_nothing <- function(x){
+#    xt <- x
+#    return(xt)
+#}
 
 
 # 4th root function
@@ -442,60 +444,60 @@ fourth_root <- function(x){
 }
 
 
-# function to extract regression params
-regression_extract <- function(df,summary_func,transform_func,comparison){
-    df.spp <- df %>% 
-        group_by(species) %>% 
-        mutate(summary.traditional=summary_func(count.traditional,na.rm=TRUE),summary.edna=summary_func(count.edna,na.rm=TRUE)) %>%
-        tidyr::nest() %>% 
-        mutate(fit=map(data, ~ lm(transform_func(!!as.name(paste0(comparison,".edna"))) ~ transform_func(!!as.name(paste0(comparison,".traditional"))), na.action="na.exclude", data = .x)), 
-            tidied = map(fit,broom::tidy),
-            glanced = map(fit,broom::glance)) %>%
-        ungroup() %>% 
-        tidyr::unnest(glanced) %>%
-        select(-p.value, -statistic) %>%
-        tidyr::unnest(tidied) %>%
-        filter(term!="(Intercept)") %>% 
-        tidyr::unnest(data) %>%
-        distinct(species,rank,estimate,p.value,r.squared,summary.traditional,summary.edna) %>%
-        arrange(rank) %>%
-        mutate(significant=if_else(p.value<=0.05,TRUE,FALSE)) %>%
-        mutate_if(is.numeric, ~replace(., is.nan(.), NA))
-        # 
-    df.t <- df %>% mutate(comp.edna.trans=transform_func(!!as.name(paste0(comparison,".edna"))), comp.trad.trans=transform_func(!!as.name(paste0(comparison,".traditional"))))
-    df.aug <- lm(formula=comp.edna.trans~comp.trad.trans,na.action="na.exclude",data=df.t) %>% 
-        augment(data=df.t) %>% 
-        group_by(species) %>%  
-        summarise(mean.resid=mean(.resid,na.rm=TRUE),se.resid=se(.resid))
-    df.comb <- left_join(df.spp,df.aug)
-    return(df.comb)
-}
+## function to extract regression params
+#regression_extract <- function(df,summary_func,transform_func,comparison){
+#    df.spp <- df %>% 
+#        group_by(species) %>% 
+#        mutate(summary.traditional=summary_func(count.traditional,na.rm=TRUE),summary.edna=summary_func(count.edna,na.rm=TRUE)) %>%
+#        tidyr::nest() %>% 
+#        mutate(fit=map(data, ~ lm(transform_func(!!as.name(paste0(comparison,".edna"))) ~ transform_func(!!as.name(paste0(comparison,".traditional"))), na.action="na.exclude", data = .x)), 
+#            tidied = map(fit,broom::tidy),
+#            glanced = map(fit,broom::glance)) %>%
+#        ungroup() %>% 
+#        tidyr::unnest(glanced) %>%
+#        select(-p.value, -statistic) %>%
+#        tidyr::unnest(tidied) %>%
+#        filter(term!="(Intercept)") %>% 
+#        tidyr::unnest(data) %>%
+#        distinct(species,rank,estimate,p.value,r.squared,summary.traditional,summary.edna) %>%
+#        arrange(rank) %>%
+#        mutate(significant=if_else(p.value<=0.05,TRUE,FALSE)) %>%
+#        mutate_if(is.numeric, ~replace(., is.nan(.), NA))
+#        # 
+#    df.t <- df %>% mutate(comp.edna.trans=transform_func(!!as.name(paste0(comparison,".edna"))), comp.trad.trans=transform_func(!!as.name(paste0(comparison,".traditional"))))
+#    df.aug <- lm(formula=comp.edna.trans~comp.trad.trans,na.action="na.exclude",data=df.t) %>% 
+#        augment(data=df.t) %>% 
+#        group_by(species) %>%  
+#        summarise(mean.resid=mean(.resid,na.rm=TRUE),se.resid=se(.resid))
+#    df.comb <- left_join(df.spp,df.aug)
+#    return(df.comb)
+#}
 
 
 # standard error function
 se <- function(x) sqrt(var(x)/length(x))
 
 
-# function to add fishbase data to table
-add_fishbase <- function(df) {
-    df.sp <- df %>% select(species) %>% 
-        mutate(speciesFb=species) %>%
-        mutate(speciesFb=str_replace_all(speciesFb,"Merlangius/Melanogrammus","Merlangius merlangus"), 
-            speciesFb=str_replace_all(speciesFb,"Hyperoplus/Ammodytes","Ammodytes tobianus"),
-            speciesFb=str_replace_all(speciesFb,"Chelon labrosus/ramada","Chelon ramada"),
-            speciesFb=str_replace_all(speciesFb,"Triglidae","Eutrigla gurnardus"), 
-            speciesFb=str_replace_all(speciesFb,"Pomatoschistus microps/minutus","Pomatoschistus minutus"),
-            speciesFb=str_replace_all(speciesFb,"Aphia/Crystallogobius","Aphia minuta"))
-    fb.df <- rfishbase::species(pull(df.sp,speciesFb),server="fishbase") %>% 
-        select(Species,DemersPelag) %>% 
-        mutate(DemersPelag=str_replace_all(DemersPelag,"bathydemersal","demersal")) %>%
-        rename(speciesFb=Species) %>% 
-        left_join(df.sp) %>% 
-        select(-speciesFb) %>% 
-        rename(lifestyle=DemersPelag)
-    df.ann <- left_join(df,fb.df)
-    return(df.ann)
-}
+## function to add fishbase data to table
+#add_fishbase <- function(df) {
+#    df.sp <- df %>% select(species) %>% 
+#        mutate(speciesFb=species) %>%
+#        mutate(speciesFb=str_replace_all(speciesFb,"Merlangius/Melanogrammus","Merlangius merlangus"), 
+#            speciesFb=str_replace_all(speciesFb,"Hyperoplus/Ammodytes","Ammodytes tobianus"),
+#            speciesFb=str_replace_all(speciesFb,"Chelon labrosus/ramada","Chelon ramada"),
+#            speciesFb=str_replace_all(speciesFb,"Triglidae","Eutrigla gurnardus"), 
+#            speciesFb=str_replace_all(speciesFb,"Pomatoschistus microps/minutus","Pomatoschistus minutus"),
+#            speciesFb=str_replace_all(speciesFb,"Aphia/Crystallogobius","Aphia minuta"))
+#    fb.df <- rfishbase::species(pull(df.sp,speciesFb),server="fishbase") %>% 
+#        select(Species,DemersPelag) %>% 
+#        mutate(DemersPelag=str_replace_all(DemersPelag,"bathydemersal","demersal")) %>%
+#        rename(speciesFb=Species) %>% 
+#        left_join(df.sp) %>% 
+#        select(-speciesFb) %>% 
+#        rename(lifestyle=DemersPelag)
+#    df.ann <- left_join(df,fb.df)
+#    return(df.ann)
+#}
 
 
 # fun to replace NaNs with NAs
@@ -836,11 +838,11 @@ add_primer_bias <- function(df,primerdf,correct){
 }
 
 
-# a pseudo r2 function
-r2.corr.mer <- function(m) {
-   lmfit <-  lm(model.response(model.frame(m)) ~ fitted(m))
-   summary(lmfit)$r.squared
-}
+## a pseudo r2 function
+#r2.corr.mer <- function(m) {
+#   lmfit <-  lm(model.response(model.frame(m)) ~ fitted(m))
+#   summary(lmfit)$r.squared
+#}
 
 
 # function to add a p value and r squared to a plot 
