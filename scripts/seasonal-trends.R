@@ -25,10 +25,12 @@ edna.org <- edna.expanded %>%
     mutate(label=paste(localitySite,lubridate::month(eventDate,label=TRUE),eventDate,replicateFilter,sep=".")) %>%
     distinct(label,species,nReads,readsBySampleTotal)
 
-# get stats
-edna.org %>% distinct(species) %>% print(n=Inf)
-edna.org %>% distinct(label) %>% print(n=Inf)
-edna.org %>% mutate(date=lubridate::ymd(str_split_fixed(label,"\\.",4)[,3])) %>% distinct(date) %>% arrange(date) %>% print(n=Inf)
+# check stats
+glue("\neDNA stats ...",.trim=FALSE)
+glue("Total number species = {edna.org %>% distinct(species) %>% count() %>% pull(n)}")
+glue("Total number samples = {edna.org %>% distinct(label) %>% count() %>% pull(n)}")
+samp.dates <- edna.org %>% mutate(date=lubridate::ymd(str_split_fixed(label,"\\.",4)[,3])) %>% distinct(date) %>% count() %>% pull(n)
+glue("Total number sampling dates = {samp.dates}")
 
 
 # run linear models for all
@@ -100,10 +102,17 @@ trad.org <- trad.collapsed %>%
 
 
 # get stats
-trad.org %>% distinct(species) %>% print(n=Inf)
-trad.org %>% distinct(label) %>% print(n=Inf)
-trad.org %>% mutate(date=lubridate::ymd(str_split_fixed(label,"\\.",4)[,3])) %>% distinct(date) %>% arrange(date) %>% print(n=Inf)
-trad.org %>% summarise(sum=sum(individualCount))
+#trad.org %>% distinct(species) %>% print(n=Inf)
+#trad.org %>% distinct(label) %>% print(n=Inf)
+#trad.org %>% mutate(date=lubridate::ymd(str_split_fixed(label,"\\.",4)[,3])) %>% distinct(date) %>% arrange(date) %>% print(n=Inf)
+#trad.org %>% summarise(sum=sum(individualCount))
+
+glue("\nTrawl stats ...",.trim=FALSE)
+glue("Total number species = {trad.org %>% distinct(species) %>% count() %>% pull(n)}")
+glue("Total number samples = {trad.org %>% distinct(label) %>% count() %>% pull(n)}")
+samp.dates <- trad.org %>% mutate(date=lubridate::ymd(str_split_fixed(label,"\\.",4)[,3])) %>% distinct(date) %>% count() %>% pull(n)
+glue("Total number sampling dates = {samp.dates}")
+
 
 # make a lm per spp with log+1 counts
 trad.org.lm <- trad.org %>% 
@@ -147,3 +156,6 @@ ggsave(filename=here("temp/results/figures/trawl-pcoa.svg"),plot=p,width=130,hei
 p <- plot.PCA(PCA(trad.mat,graph=FALSE,scale.unit=FALSE),choix="var",select="contrib 12",ggoptions=list(size=2,circle.lwd=0.3,circle.lty=3,line.lty=3,line.lwd=0.3)) + theme(plot.title=element_blank(),axis.title=element_text(size=8))
 #plot(p)
 ggsave(filename=here("temp/results/figures/trawl-pcoa-plot.svg"),plot=p,width=130,height=80,units="mm")
+
+# report
+glue("\nFigures saved to 'temp/results/figures'",.trim=FALSE)

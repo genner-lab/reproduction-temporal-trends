@@ -48,4 +48,5 @@ trad.master <- read_csv(file=here("assets/trad-data-master.csv"),show_col_types=
     mutate(partnerID=str_split_fixed(eventID,"-",3)[,1]) %>% # add partnerID
     mutate(fieldNumber=if_else(is.na(fieldNumber),eventID,fieldNumber)) # add a dummy field number for those missing
 
+#glue("\nTrawl and eDNA data cleaned and loaded :)",.trim=FALSE)
 writeLines("\nTrawl and eDNA data cleaned and loaded :)")

@@ -7,6 +7,7 @@ suppressPackageStartupMessages({
     library("lubridate")
     #library("RColorBrewer")
     library("magrittr")
+    library("glue")
     library("ggthemes")
     library("FactoMineR")
     #library("ggridges")
@@ -17,6 +18,7 @@ suppressPackageStartupMessages({
     library("emmeans")
     library("performance")
     library("vegan")
+    library("xtable")
 })
 
 ### LOAD FUNCTIONS
@@ -530,7 +532,7 @@ annotate_fishbase <- function(df,collapse) {
         mutate(spawningByMonth=if_else(propSpawningByMonth==0,FALSE,TRUE,NA)) %>% 
         select(-hasSpawnData)
     # custom spawning
-    custom.tab <- read_csv(file=here("assets/fishbase-spawning-custom.csv")) %>% 
+    custom.tab <- read_csv(file=here("assets/fishbase-spawning-custom.csv"),show_col_types=FALSE) %>% 
         dplyr::select(-notes) %>%
         filter(!is.na(lifestyle)) %>% 
         rename(sciNameValid=species) %>%
@@ -558,7 +560,7 @@ annotate_fishbase <- function(df,collapse) {
         filter(!is.na(Species)) %>% 
         rename(sciNameValid=Species,locality=Locality,fecundityMin=FecundityMin,fecundityMax=FecundityMax) %>%
         group_by(sciNameValid) %>%
-        mutate(fecundityMinMean=mean(fecundityMin,na.rm=TRUE),fecundityMaxMean=mean(fecundityMax,na.rm=TRUE),fecundityMean=mean(c(fecundityMinMean,fecundityMaxMean),na.rm=TRUE)) %>%
+        mutate(fecundityMinMean=suppressWarnings(mean(fecundityMin,na.rm=TRUE)),fecundityMaxMean=suppressWarnings(mean(fecundityMax,na.rm=TRUE)),fecundityMean=suppressWarnings(mean(c(fecundityMinMean,fecundityMaxMean),na.rm=TRUE))) %>%
         ungroup() %>% 
         distinct(sciNameValid,fecundityMean)
     # lifestyle/species
@@ -585,7 +587,14 @@ annotate_fishbase <- function(df,collapse) {
         ungroup() %>%
         select(sciNameValid,meanTrophicLevel,shoaling)
     # join and clean
-    df.joined <- df %>% left_join(spawn.tab) %>% left_join(custom.tab) %>% left_join(larvae.tab) %>% left_join(fec.tab) %>% left_join(life.tab) %>% left_join(length.tab) %>% left_join(ecology.tab)
+    df.joined <- df %>% 
+        left_join(spawn.tab,by="sciNameValid") %>% 
+        left_join(custom.tab,by=c("sciNameValid","month")) %>% 
+        left_join(larvae.tab,by=c("sciNameValid","month")) %>% 
+        left_join(fec.tab,by="sciNameValid") %>% 
+        left_join(life.tab,by="sciNameValid") %>% 
+        left_join(length.tab,by="sciNameValid") %>% 
+        left_join(ecology.tab,by="sciNameValid")
     df.joined %<>% relocate(lifestyle,.after=lifestyleFishbase) %>%
         mutate_if(is.numeric,list(replace_nan)) %>%
         rename(species=sciNameValid)
@@ -713,7 +722,7 @@ rank_and_subset <- function(df,rankmethod,print,n){
 
 # function to join the eDNA and trad survey dataframes
 join_and_clean <- function(trad,edna){
-    trad.edna.comb <- left_join(edna,trad) %>% 
+    trad.edna.comb <- suppressMessages(left_join(edna,trad)) %>% 
         select(partnerID,primerSet,library,eventID,sampleHash,replicateFilter,replicatePCR,eventDate,year,month,day,localityID,localitySite,
                 temporalGroup,spatialGroup,species,lifestage,nReads,maxEfficiency,readsBySampleTotal,readsBySampleProportion,readsByGroupTotal,readsByGroup,readsByGroupProportion,
                 individualsByGroup,individualsByGroupRate,individualsByGroupProportion,weightInGramsByGroup,weightInGramsByGroupRate,weightInGramsByGroupProportion) %>%
@@ -777,7 +786,7 @@ expand_and_summarise <- function(df,sppdf,eventdf,primerdf,method,spatialgroup,t
     # eDNA
     } else if(method=="edna") {
         completed.df <- df %>% 
-            full_join(sppdf) %>% # add the names from trad surveys
+            suppressMessages(full_join(sppdf)) %>% # add the names from trad surveys ,by="species"
             group_by(lifestage,primerSet,library,partnerID,eventID,sampleHash,replicateFilter,replicatePCR,eventDate,species) %>% 
             summarise(nreads=sum(nreads,na.rm=TRUE),.groups="drop") %>% # merge reads back by species after changing spp names with collapse_taxonomy()
             group_by(partnerID) %>%
