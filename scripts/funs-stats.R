@@ -10,6 +10,8 @@ suppressPackageStartupMessages({
     library("ggthemes")
     library("FactoMineR")
     library("broom")
+    library("broom.mixed")
+    library("MuMIn")
     library("rfishbase")
     library("glmmTMB")
     library("DHARMa")

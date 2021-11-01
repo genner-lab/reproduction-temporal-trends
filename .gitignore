@@ -39,6 +39,6 @@ vignettes/*.pdf
 .Renviron
 
 # temp
-temp/
-meta-fish-pipe/
-refseq-reflib/
+temp
+meta-fish-pipe
+refseq-reflib
