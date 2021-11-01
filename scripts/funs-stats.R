@@ -21,6 +21,10 @@ suppressPackageStartupMessages({
     library("xtable")
     #renv::install("cmartin/ggConvexHull")
     library("ggConvexHull")
+    library("svglite")
+    library("see")
+    library("patchwork")
+    library("qqplotr")
 })
 
 ### LOAD FUNCTIONS

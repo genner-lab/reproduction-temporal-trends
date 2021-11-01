@@ -4,6 +4,11 @@
 # load libs
 source(here::here("scripts/funs-bioinformatics.R"))
 
+# make results dir
+if(!dir.exists(here("temp/results"))){
+    dir.create(here("temp/results"),recursive=TRUE)
+}
+
 ### add primers to custom reference library
 
 # load refs
@@ -89,11 +94,6 @@ effic.df <- dplyr::bind_rows(
     enframe(mifish.u.mod.res,name="dbid",value="efficiency") %>% mutate(primerSet="mifish-u-mod"),
     enframe(mifish.u.res,name="dbid",value="efficiency") %>% mutate(primerSet="mifish-u")
     )
-
-# make results dir
-if(!dir.exists(here("temp/results"))){
-    dir.create(here("temp/results"),recursive=TRUE)
-}
 
 # format and write out
 effic.df %>% mutate(species=pull(custom.refs,sciNameValid)[match(dbid,pull(custom.refs,dbid))]) %>% 
