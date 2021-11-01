@@ -2,8 +2,6 @@
 
 # load libs and funs
 source(here::here("scripts/load-data.R"))
-library("xtable")
-
 
 ### GENERAL STATS ADULTS ###
 
@@ -14,8 +12,9 @@ edna.collapsed <- edna.filt %>%
     filter(nreads>0)
 
 # total reads & samples
-edna.collapsed %>% pull(nreads) %>% sum()
-edna.collapsed %>% distinct(sampleHash)
+glue("\nTotal number reads (eDNA) = {edna.collapsed %>% pull(nreads) %>% sum()}",.trim=FALSE)
+glue("Total number samples (eDNA) = {edna.collapsed %>% distinct(sampleHash) %>% count() %>% pull()}")
+glue("Total number species (eDNA) = {edna.collapsed %>% distinct(species) %>% count() %>% pull()}")
 
 # get time duration
 dur.edna <- edna.collapsed %>% distinct(eventDate) %>% arrange(eventDate) %>% pull(eventDate)
@@ -35,40 +34,29 @@ trad.spp <- trad.collapsed %>% distinct(species) %>% pull()
 edna.spp <- edna.collapsed %>% distinct(species) %>% pull()
 
 # get trad numbers before time filter (seasonal PCoAs)
-trad.filtered %>% distinct(species) %>% pull() %>% length()
-trad.filtered %>% pull(individualCount) %>% sum()
-trad.filtered %>% distinct(eventID,eventDate,fieldNumber) %>% count() %>% pull()
+glue("\nTotal number species (L4 trawl, full duration) = {trad.filtered %>% distinct(species) %>% count() %>% pull()}",.trim=FALSE)
+glue("Total number individuals (L4 trawl, full duration) = {trad.filtered %>% pull(individualCount) %>% sum()}")
+glue("Total number unique trawl events (L4 trawl, full duration) = {trad.filtered %>% distinct(eventID,eventDate,fieldNumber) %>% count() %>% pull()}")
 
 # get numbers after time duration filter (correlations models)
-length(trad.spp)
-trad.collapsed %>% pull(individualCount) %>% sum()
-trad.collapsed %>% distinct(eventID,eventDate,fieldNumber) %>% count() %>% pull()
-#
-length(edna.spp)
-edna.collapsed %>% pull(nreads) %>% sum()
+glue("\nTotal number species (L4 trawl, concurrent duration) = {length(trad.spp)}",.trim=FALSE)
+glue("Total number individuals (L4 trawl, concurrent duration) = {trad.collapsed %>% pull(individualCount) %>% sum()}")
+glue("Total number unique trawl events (L4 trawl, concurrent duration) = {trad.collapsed %>% distinct(eventID,eventDate,fieldNumber) %>% count() %>% pull()}")
 
-# in trad, not eDNA
-setdiff(trad.spp,edna.spp) %>% length()
-# in eDNA not trad
-setdiff(edna.spp,trad.spp) %>% length()
-
-# shared spp
-length(intersect(trad.spp,edna.spp))
-
-# shared proportion
-length(intersect(trad.spp,edna.spp)) / length(trad.spp)
-
-# combined spp
-length(union(trad.spp,edna.spp))
+# species in each dataset
+glue("\nNumber species detected in trawls and not in eDNA = {setdiff(trad.spp,edna.spp) %>% length()}",.trim=FALSE)
+glue("Number species detected in eDNA and not in trawls = {setdiff(edna.spp,trad.spp) %>% length()}")
+glue("Proportion of trawl species also detected by eDNA = {round(length(intersect(trad.spp,edna.spp)) / length(trad.spp),digits=2)}")
+glue("Shared number species detected in both eDNA and trawls = {length(intersect(trad.spp,edna.spp))}")
+glue("Combined number species detected in both eDNA and trawls = {length(union(trad.spp,edna.spp))}")
 
 # species list slopes plot
 trad.list <- trad.collapsed %>% group_by(species) %>% summarise(totalTrad=sum(individualCount),.groups="drop")
 edna.list <- edna.collapsed %>% group_by(species) %>% summarise(totalEdna=sum(nreads),.groups="drop")
 
 # join and clean
-lists.joined <- full_join(trad.list,edna.list) %>% 
+lists.joined <- full_join(trad.list,edna.list,by="species") %>% 
     mutate_all(~replace_na(.,0))
-
 
 # make the ranking
 spp.ranked <- lists.joined %>% 
@@ -87,16 +75,17 @@ p <- spp.ranked %>% ggplot(aes(x=data,y=rank,group=species)) +
     theme_void() +
     theme(legend.position="none") +
     scale_colour_distiller(palette="RdYlBu")
-plot(p)
+#plot(p)
 ggsave(filename=here("temp/results/figures/species-slopes.svg"),plot=p,width=250,height=500,units="mm")
 
 # check the zero spp
-lists.joined %>% filter(totalEdna==0) %>% arrange(species)
-lists.joined %>% filter(totalTrad==0) %>% arrange(species) %>% print(n=Inf)
+glue("\nPrinting all species with zero detection in trawls or eDNA ...\n",.trim=FALSE)
+lists.joined %>% filter(totalEdna==0 | totalTrad==0) %>% arrange(species) %>% print(n=Inf)
 
 # annotate and print out the list
+glue("\nPrinting trawl and eDNA species abundance table ...\n",.trim=FALSE)
 lists.joined %>% 
-    left_join(rename(tax.table,species=sciNameValid)) %>% 
+    left_join(rename(tax.table,species=sciNameValid),by="species") %>% 
     mutate(speciesUncollapsed=species) %>% 
     adult_edit(collapse=TRUE) %>% 
     mutate(species=if_else(species==speciesUncollapsed,"",species)) %>%
@@ -110,14 +99,28 @@ lists.joined %>%
     print.xtable(include.rownames=FALSE,booktabs=TRUE,sanitize.text.function=identity,caption.placement="top",size="tiny")
 
 # sum up
-lists.joined %>% summarise(totalTrad=sum(totalTrad),totalEdna=sum(totalEdna))
+#lists.joined %>% summarise(totalTrad=sum(totalTrad),totalEdna=sum(totalEdna))
 
 
 ### BIOINFORMATICS SUMMARY TABLE ###
 
 # load and format
-read_csv(here("meta-fish-pipe/results/stats-summary.csv")) %>% 
+glue("\nPrinting bioinformatics stats table ...\n",.trim=FALSE)
+read_csv(here("meta-fish-pipe/results/stats-summary.csv"),show_col_types=FALSE) %>% 
     pivot_wider(names_from=library,values_from=nreads) %>%
+    rename(Library1=`tele02-lib1`,Library2=`tele02-lib2`,Library3=`tele02-lib3`,Library4=`tele02-lib4`) %>% 
+    mutate(
+        stat=str_replace_all(stat,"pf","Total passing filter"),
+        stat=str_replace_all(stat,"primer","Detect primers"),
+        stat=str_replace_all(stat,"barcode","Demultiplex"),
+        stat=str_replace_all(stat,"trim","Trim primers"),
+        stat=str_replace_all(stat,"^filter","Quality filter"),
+        stat=str_replace_all(stat,"merge","Merge"),
+        stat=str_replace_all(stat,"chim","Remove chimaeras"),
+        stat=str_replace_all(stat,"homol","Homology search"),
+        stat=str_replace_all(stat,"assigned","Taxonomy assigned")
+    ) %>%
+    rename(`Filtering step`=stat) %>% 
     mutate_all(~prettyNum(.,big.mark=",")) %>%
     xtable(caption="blahhh", digits=c(0,0,0,0,0,0)) %>%
     print.xtable(include.rownames=FALSE,booktabs=TRUE,sanitize.text.function=identity,caption.placement="top")
@@ -140,21 +143,20 @@ p <- edna.filt %>% filter(primerSet=="tele02" & partnerID=="MBA") %>%
         scale_color_manual(values=colorRampPalette(ptol_pal()(12))(13)) +
         labs(x="Month",y="Read depth (log10)") +
         theme(legend.position="none")
-plot(p)
+#plot(p)
 ggsave(filename=here("temp/results/figures/read-depth-libs.svg"),plot=p,width=200,height=105,units="mm")
 
 
 ### NMDS BY DEPTH/LOCATION ###
-#library("vegan")
-#renv::install("cmartin/ggConvexHull")
-library("ggConvexHull")
+
+glue("\nNow running NMDS ...\n",.trim=FALSE)
 
 # collapse
 trad.collapsed <- trad.master %>% collapse_taxonomy(rmfw=TRUE,lifestage="Adult",collapse=FALSE)# ORDINATIONS
 edna.collapsed <- edna.filt %>% collapse_taxonomy(rmfw=TRUE,lifestage="Adult",collapse=FALSE)# ORDINATIONS
 
 # make a list of species common to edna and trad (by partnerID)
-comb.spp <- full_join(distinct(edna.collapsed,partnerID,species),distinct(trad.collapsed,partnerID,species)) %>% arrange(partnerID,species)
+comb.spp <- full_join(distinct(edna.collapsed,partnerID,species),distinct(trad.collapsed,partnerID,species),by=c("species","partnerID")) %>% arrange(partnerID,species)
 
 # expand for all spp and get groups
 edna.expanded <- edna.collapsed %>% expand_and_summarise(sppdf=comb.spp,eventdf=events,primerdf=primer.bias,method="edna",spatialgroup="locality",temporalgroup="day",correct=FALSE)# EGGS/ADULTS/SPAWNING
@@ -177,7 +179,7 @@ edna.mat.mds <- edna.org %>%
     as.matrix()
 
 # run NMDS
-edna.mds <- edna.mat.mds %>% metaMDS(autotransform=TRUE,k=2,distance="bray",binary=FALSE,trace=3,trymax=500)
+edna.mds <- edna.mat.mds %>% metaMDS(autotransform=TRUE,k=3,distance="bray",binary=FALSE,trace=FALSE,trymax=500)
 edna.mds %>% print()
 
 # extract, make factors
@@ -187,21 +189,6 @@ nmds.tbl <- edna.mds %>%
     mutate(yearMonth=paste(str_split_fixed(Sample,"\\.",8)[,4],str_split_fixed(Sample,"\\.",8)[,3],sep="-"),locality=str_split_fixed(Sample,"\\.",8)[,1],site=paste(str_split_fixed(Sample,"\\.",8)[,1],str_split_fixed(Sample,"\\.",8)[,2],sep="-"),depth=str_split_fixed(Sample,"\\.",8)[,2],lib=str_split_fixed(Sample,"\\.",8)[,8]) %>%
     mutate(yearMonth=fct_relevel(yearMonth,c("2017-Feb","2017-Mar","2017-Apr","2017-May","2017-Jun","2017-Jul","2017-Aug","2017-Sep","2017-Oct","2017-Nov","2018-Feb","2018-Mar","2018-Apr"))) 
 
-# make an NMDS plotting FUN
-plot_nmds <- function(df,var) {
-    n.var <- df %>% distinct(!!as.name(var)) %>% pull(!!as.name(var)) %>% length()
-    if(n.var > 12) {
-        cols <- colorRampPalette(ptol_pal()(12))(n.var)
-    } else {
-        cols <- ptol_pal()(n.var)
-    }
-    p <- df %>% ggplot(aes(x=NMDS1,y=NMDS2,color=!!as.name(var),fill=!!as.name(var))) + 
-        geom_point(size=5,alpha=1,shape=24) +
-        geom_convexhull(aes(fill=!!as.name(var),color=!!as.name(var)),alpha=0.1) +
-        scale_discrete_manual(values=cols,aesthetic=c("color","fill")) + 
-        theme_bw()
-return(p)
-}
 
 # plot all by YEARMONTH 
 p <- nmds.tbl %>% plot_nmds(var="yearMonth")
@@ -231,7 +218,8 @@ ggsave(filename=here("temp/results/figures/depth-nmds.svg"),plot=p,width=200,hei
 ### NEGATIVE CONTROLS ###
 
 # table of negative controls
-read_csv(here("meta-fish-pipe/results/controls-summary.csv")) %>% 
+glue("\nPrinting negative controls table ...\n",.trim=FALSE)
+read_csv(here("meta-fish-pipe/results/controls-summary.csv"),show_col_types=FALSE) %>% 
     mutate(partnerID=str_split_fixed(eventID,"-",4)[,1]) %>% 
     filter(partnerID!="EA") %>%
     group_by(library,blankType,sampleHash) %>%
@@ -246,6 +234,7 @@ read_csv(here("meta-fish-pipe/results/controls-summary.csv")) %>%
 ### READS AND SAMPLES ###
 
 # table of samples
+glue("\nPrinting reads by sample table ...\n",.trim=FALSE)
 edna.filt %>% filter(partnerID=="MBA") %>%
     group_by(library,eventID,sampleHash) %>%
     summarise(sampleReads=sum(nreads),.groups="drop") %>%
@@ -256,3 +245,6 @@ edna.filt %>% filter(partnerID=="MBA") %>%
     mutate_if(is.numeric,~prettyNum(.,big.mark=",")) %>%
     xtable(caption="blahhh") %>% 
     print.xtable(include.rownames=FALSE,booktabs=TRUE,sanitize.text.function=identity,caption.placement="top")
+
+# report
+glue("\nFigures saved to 'temp/results/figures'",.trim=FALSE)

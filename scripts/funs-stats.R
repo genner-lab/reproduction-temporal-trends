@@ -19,6 +19,8 @@ suppressPackageStartupMessages({
     library("performance")
     library("vegan")
     library("xtable")
+    #renv::install("cmartin/ggConvexHull")
+    library("ggConvexHull")
 })
 
 ### LOAD FUNCTIONS
@@ -868,4 +870,21 @@ extract_p <- function(df,y,x,type,dp) {
         pull(pretty)
     } else stop(writeLines("type must be 'lm' or 'glm'."))
 return(fit)
+}
+
+
+# make an NMDS plotting FUN
+plot_nmds <- function(df,var) {
+    n.var <- df %>% distinct(!!as.name(var)) %>% pull(!!as.name(var)) %>% length()
+    if(n.var > 12) {
+        cols <- colorRampPalette(ptol_pal()(12))(n.var)
+    } else {
+        cols <- ptol_pal()(n.var)
+    }
+    p <- df %>% ggplot(aes(x=NMDS1,y=NMDS2,color=!!as.name(var),fill=!!as.name(var))) + 
+        geom_point(size=5,alpha=1,shape=24) +
+        geom_convexhull(aes(fill=!!as.name(var),color=!!as.name(var)),alpha=0.1) +
+        scale_discrete_manual(values=cols,aesthetic=c("color","fill")) + 
+        theme_bw()
+return(p)
 }
