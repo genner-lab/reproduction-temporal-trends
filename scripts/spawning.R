@@ -49,7 +49,7 @@ surveys.joined.coll <- surveys.joined.ann %>% mutate(binvar=if_else(spawningByMo
 
 # plot SPAWNING GLMs
 p <-surveys.joined.coll %>% ggplot(aes(x=nReads,y=binvar)) +
-            geom_smooth(method="glm",formula=y~x,method.args=list(family=binomial(link="logit"),na.action=na.omit),se=TRUE,alpha=0.5,color="#737145",fill="gray90") +
+            geom_smooth(method="glm",formula=y~x,method.args=list(family=binomial(link="logit"),na.action=na.omit),se=TRUE,alpha=0.5,color="#2f8685",fill="gray90") +
             geom_rug(data=filter(surveys.joined.coll,binvar==0),sides="b",alpha=0.2) +
             geom_rug(data=filter(surveys.joined.coll,binvar==1),sides="t",alpha=0.2) +
             annotate(geom="label",x=90000,y=0.1,label=extract_p(surveys.joined.coll,y="binvar",x="nReads",type="glm",dp=18),size=3) +

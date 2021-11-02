@@ -76,7 +76,7 @@ p <- surveys.joined.avg %>% ggplot(aes(y=readsByGroupProportionMean,x=individual
         geom_pointrange(color="gray30",size=0.5) +
         geom_text(aes(label=species),check_overlap=TRUE,vjust=1.5,size=3,color="gray50") +
         annotate(geom="label",x=1.25,y=0.05,label=extract_p(surveys.joined.avg,y="readsByGroupProportionMean",x="individualsByGroupRateMean",type="lm",dp=5),size=3) +
-        geom_smooth(method="lm",formula=y~x,alpha=0.5,color="#737145",fill="gray90") +
+        geom_smooth(method="lm",formula=y~x,alpha=0.5,color="#2f8685",fill="gray90") +
         theme_clean(base_size=12) +
         labs(x="Larval ichthyoplankton abundance\n(4th root transformed CPUE)",y="Proportion of fish community (eDNA)\n(4th root  transformed CPUE)")
 #plot(p)

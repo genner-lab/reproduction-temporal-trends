@@ -67,7 +67,7 @@ edna.pc1.tib <- tibble(label=rownames(edna.mat.pcoa), PC1=edna.mat.pcoa[,2]) %>%
 p <- edna.pc1.tib %>%
         ggplot(aes(x=yearMonth,y=PC1)) +
         geom_point(color="gray30",size=2.5,alpha=0.8,shape=16) + 
-        geom_smooth(aes(x=as.numeric(yearMonth)),method="gam",formula=y~s(x,bs="cs",k=4),color="#737145",alpha=0.5,fill="gray90") + 
+        geom_smooth(aes(x=as.numeric(yearMonth)),method="gam",formula=y~s(x,bs="cs",k=4),color="#2f8685",alpha=0.5,fill="gray90") + 
         ggthemes::theme_clean(base_size=12) +
         labs(x="Date", y="eDNA PCoA-2 scores")
 #plot(p)
@@ -146,7 +146,7 @@ trad.pc1.tib <- tibble(label=rownames(trad.mat.pcoa), PC1=trad.mat.pcoa[,1]) %>%
 p <- trad.pc1.tib %>%
     ggplot(aes(x=month,y=PC1)) +
         geom_point(color="gray30",size=2.5,alpha=0.8,shape=16) + 
-        geom_smooth(aes(x=as.numeric(month)),method="gam",formula=y~s(x,bs="cs",k=4),color="#737145",alpha=0.5,fill="gray90") +
+        geom_smooth(aes(x=as.numeric(month)),method="gam",formula=y~s(x,bs="cs",k=4),color="#2f8685",alpha=0.5,fill="gray90") +
         ggthemes::theme_clean(base_size=12) +
         labs(x="Date", y="Demersal trawl PCoA-1 scores")
 #plot(p)

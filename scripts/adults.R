@@ -82,7 +82,7 @@ p <- surveys.joined.avg %>% ggplot(aes(y=readsByGroupProportionMean,x=individual
         geom_pointrange(color="gray30",size=0.5) +
         geom_text(aes(label=species),check_overlap=TRUE,vjust=1.5,size=3,color="gray50") +
         annotate(geom="label",x=5,y=0.05,label=extract_p(df=surveys.joined.avg,y="readsByGroupProportionMean",x="individualsByGroupRateMean",type="lm",dp=7),size=3) +
-        geom_smooth(method="lm",formula=y~x,alpha=0.5,color="#737145",fill="gray90") +
+        geom_smooth(method="lm",formula=y~x,alpha=0.5,color="#2f8685",fill="gray90") +
         theme_clean(base_size=12) +
         labs(x="Demersal trawl adult abundance\n(4th root transformed CPUE)",y="Proportion of fish community (eDNA)\n(4th root transformed CPUE)")
 #plot(p)
@@ -162,10 +162,10 @@ pdf(file=here("temp/results/figures/model-check-dharma.pdf"))
 dev.off()
 
 # run performance checks
-perm <- performance::check_model(m0)
+perm <- performance::check_model(m0,check="all")
 
 # plot pdf
-pdf(file=here("temp/results/figures/model-check-performance.pdf"),height=12,width=18)
+pdf(file=here("temp/results/figures/model-check-performance.pdf"),height=18,width=18)
     plot(perm)
 dev.off()
 

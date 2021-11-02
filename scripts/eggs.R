@@ -61,7 +61,7 @@ lm(readsByGroupProportionMean ~ individualsByGroupRateMean, data=surveys.joined.
 p <- surveys.joined.coll %>% ggplot(aes(y=readsByGroupProportionMean,x=individualsByGroupRateMean,ymin=readsByGroupProportionMean-sem,ymax=readsByGroupProportionMean+sem)) + 
         geom_pointrange(color="gray30",size=0.5) +
         annotate(geom="label",x=225,y=0.1,label=extract_p(surveys.joined.coll,y="readsByGroupProportionMean",x="individualsByGroupRateMean",type="lm",dp=3),size=3) +
-        geom_smooth(method="lm",formula=y~x,alpha=0.5,color="#737145",fill="gray90") +
+        geom_smooth(method="lm",formula=y~x,alpha=0.5,color="#2f8685",fill="gray90") +
         theme_clean(base_size=12) +
         labs(x="Pilchard egg ichthyoplankton abundance\n(CPUE)",y="Proportion of fish community (eDNA)\n(4th root transformed CPUE")
 #plot(p)
