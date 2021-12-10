@@ -21,7 +21,7 @@ edna.org <- edna.expanded %>%
     group_by(species) %>% 
     mutate(sppn=sum(nReads)) %>% 
     ungroup() %>%
-    filter(sppn>1000) %>% 
+    filter(sppn>0) %>% 
     mutate(label=paste(localitySite,lubridate::month(eventDate,label=TRUE),eventDate,replicateFilter,sep=".")) %>%
     distinct(label,species,nReads,readsBySampleTotal)
 

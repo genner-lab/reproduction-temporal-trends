@@ -42,10 +42,10 @@ glue("\nSpecies ranked by proportion zero catch events ...",.trim=FALSE)
 surveys.joined %>% zero_catch_filter(comparison="individuals",filter="both0",print=TRUE,maxprop0=1) %>% invisible()
 
 # subset by ranked indivs 
-surveys.joined %<>% rank_and_subset(rankmethod="reads",print=FALSE,n=63)# @ 1000 reads
+#surveys.joined %<>% rank_and_subset(rankmethod="reads",print=FALSE,n=63)# @ 1000 reads
 
 # filter rare species with few records
-surveys.joined %<>% zero_catch_filter(comparison="individuals",filter="both0",print=FALSE,maxprop0=0.90)# previously 0.95
+surveys.joined %<>% zero_catch_filter(comparison="individuals",filter="both0",print=FALSE,maxprop0=0.99)# previously 0.95
 
 # load up the fishbase data and merge with joined surveys 
 tax.table.ann <- tax.table %>% annotate_fishbase(collapse="Adult")# ADULTS
@@ -81,7 +81,7 @@ lm(readsByGroupProportionMean ~ individualsByGroupRateMean, data=surveys.joined.
 p <- surveys.joined.avg %>% ggplot(aes(y=readsByGroupProportionMean,x=individualsByGroupRateMean,ymin=readsByGroupProportionMean-sem,ymax=readsByGroupProportionMean+sem)) + 
         geom_pointrange(color="gray30",size=0.5) +
         geom_text(aes(label=species),check_overlap=TRUE,vjust=1.5,size=3,color="gray50") +
-        annotate(geom="label",x=5,y=0.05,label=extract_p(df=surveys.joined.avg,y="readsByGroupProportionMean",x="individualsByGroupRateMean",type="lm",dp=7),size=3) +
+        annotate(geom="label",x=5,y=0.05,label=extract_p(df=surveys.joined.avg,y="readsByGroupProportionMean",x="individualsByGroupRateMean",type="lm",dp=9),size=3) +
         geom_smooth(method="lm",formula=y~x,alpha=0.5,color="#2f8685",fill="gray90") +
         theme_clean(base_size=12) +
         labs(x="Demersal trawl adult abundance\n(4th root transformed CPUE)",y="Proportion of fish community (eDNA)\n(4th root transformed CPUE)")

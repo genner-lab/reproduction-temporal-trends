@@ -43,10 +43,10 @@ glue("\nSpecies ranked by proportion zero catch events ...",.trim=FALSE)
 surveys.joined %>% zero_catch_filter(comparison="individuals",filter="both0",print=TRUE,maxprop0=1) %>% invisible()
 
 # subset by ranked indivs 
-surveys.joined %<>% rank_and_subset(rankmethod="individuals",print=FALSE,n=26)# LARVAE
+#surveys.joined %<>% rank_and_subset(rankmethod="individuals",print=FALSE,n=26)# LARVAE
 
 # filter rare species with few records
-surveys.joined %<>% zero_catch_filter(comparison="individuals",filter="both0",print=FALSE,maxprop0=0.95)
+surveys.joined %<>% zero_catch_filter(comparison="individuals",filter="both0",print=FALSE,maxprop0=0.99)
 
 # get number samples
 glue("\nData included in model ...",.trim=FALSE)
@@ -75,7 +75,7 @@ lm(readsByGroupProportionMean ~ individualsByGroupRateMean, data=surveys.joined.
 p <- surveys.joined.avg %>% ggplot(aes(y=readsByGroupProportionMean,x=individualsByGroupRateMean,ymin=readsByGroupProportionMean-sem,ymax=readsByGroupProportionMean+sem)) + 
         geom_pointrange(color="gray30",size=0.5) +
         geom_text(aes(label=species),check_overlap=TRUE,vjust=1.5,size=3,color="gray50") +
-        annotate(geom="label",x=1.25,y=0.05,label=extract_p(surveys.joined.avg,y="readsByGroupProportionMean",x="individualsByGroupRateMean",type="lm",dp=5),size=3) +
+        annotate(geom="label",x=1.25,y=0.05,label=extract_p(surveys.joined.avg,y="readsByGroupProportionMean",x="individualsByGroupRateMean",type="lm",dp=9),size=3) +
         geom_smooth(method="lm",formula=y~x,alpha=0.5,color="#2f8685",fill="gray90") +
         theme_clean(base_size=12) +
         labs(x="Larval ichthyoplankton abundance\n(4th root transformed CPUE)",y="Proportion of fish community (eDNA)\n(4th root  transformed CPUE)")

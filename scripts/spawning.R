@@ -27,10 +27,10 @@ glue("\nSpecies ranked by proportion zero catch events ...",.trim=FALSE)
 surveys.joined %>% zero_catch_filter(comparison="individuals",filter="both0",print=TRUE,maxprop0=1) %>% invisible()
 
 # subset by ranked indivs 
-surveys.joined %<>% rank_and_subset(rankmethod="reads",print=FALSE,n=76)
+#surveys.joined %<>% rank_and_subset(rankmethod="reads",print=FALSE,n=76)
 
 # filter rare species with few records
-surveys.joined %<>% zero_catch_filter(comparison="individuals",filter="both0",print=FALSE,maxprop0=0.95)
+surveys.joined %<>% zero_catch_filter(comparison="individuals",filter="both0",print=FALSE,maxprop0=0.99)
 
 # load up the fishbase data and merge with joined surveys 
 tax.table.ann <- tax.table %>% annotate_fishbase(collapse="Adult")
@@ -52,7 +52,7 @@ p <-surveys.joined.coll %>% ggplot(aes(x=nReads,y=binvar)) +
             geom_smooth(method="glm",formula=y~x,method.args=list(family=binomial(link="logit"),na.action=na.omit),se=TRUE,alpha=0.5,color="#2f8685",fill="gray90") +
             geom_rug(data=filter(surveys.joined.coll,binvar==0),sides="b",alpha=0.2) +
             geom_rug(data=filter(surveys.joined.coll,binvar==1),sides="t",alpha=0.2) +
-            annotate(geom="label",x=90000,y=0.1,label=extract_p(surveys.joined.coll,y="binvar",x="nReads",type="glm",dp=18),size=3) +
+            annotate(geom="label",x=90000,y=0.1,label=extract_p(surveys.joined.coll,y="binvar",x="nReads",type="glm",dp=20),size=3) +
             labs(x="eDNA read abundance",y="Breeding by month (Pr)") +
             ggthemes::theme_clean(base_size=12)
 #plot(p)
