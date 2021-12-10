@@ -337,7 +337,7 @@ collapse_fishbase <- function(df) {
 # function to filter by number of no-catch events
 # comparison can be "individuals" or "weights"
 # filter can be "both0" (edna AND trad == 0) or "either0" (edna OR trad == 0)
-# maxprop is a filter to remove rows above a threshold
+# maxprop is a filter to remove rows below a threshold
 zero_catch_filter <- function(df,comparison,filter,print,maxprop0){
     df.f <- df
         if("nReads" %in% colnames(df.f) == TRUE & comparison=="individuals" & filter=="either0") {
@@ -357,11 +357,17 @@ zero_catch_filter <- function(df,comparison,filter,print,maxprop0){
         } else if("nReads" %in% colnames(df.f) == FALSE & comparison=="weights" & filter=="both0") {
             df.new <- df.f %>% group_by(partnerID,species) %>% mutate(zeroEvent=if_else(readsByGroup==0 & weightInGramsByGroup==0,TRUE,FALSE),nEvents=n(),nZeroEvents=length(which(zeroEvent==TRUE)),propZeroEvents=nZeroEvents/nEvents) %>% ungroup()
         } else stop(writeLines("filter must be 'either0' or 'both0'; comparison must be 'individuals' or 'weights'."))
-    df.new %<>% filter(propZeroEvents <= maxprop0) %>% 
-        select(-zeroEvent,-nEvents,-nZeroEvents)
     if(print==TRUE) {
-        df.new %>% distinct(species,propZeroEvents) %>% arrange(propZeroEvents,species) %>% print(n=Inf)
-    } else {}
+        df.new %>% mutate(propZeroEventsRound=ceiling(propZeroEvents*100)/100) %>% 
+            distinct(species,propZeroEvents,propZeroEventsRound) %>% 
+            arrange(propZeroEvents,species) %>% 
+            print.data.frame()
+    } else {
+        df.new %<>% select(-zeroEvent,-nEvents,-nZeroEvents) %>%
+            #mutate(propZeroEvents=round(propZeroEvents,digits=2))
+            mutate(propZeroEvents=ceiling(propZeroEvents*100)/100) %>%
+            filter(propZeroEvents < maxprop0)
+    }
     return(df.new)
 }
 
