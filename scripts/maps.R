@@ -16,7 +16,7 @@ bottom <- 40
 top <- 60
 
 # get bathy data
-base <- getNOAA.bathy(lon1=left,lon2=right,lat1=bottom,lat2=top,resolution=1)#
+base <- getNOAA.bathy(lon1=left,lon2=right,lat1=bottom,lat2=top,resolution=1)
 
 # convert bathymetry
 bathyLon <- as.numeric(rownames(base))
@@ -34,7 +34,7 @@ dev.off()
 
 # plot study site
 pdf(file="temp/results/figures/bathymap-temp.pdf",width=8,height=8,useDingbats=FALSE)
-    plot(coastlineWorldFine,clon=-5,clat=50,span=200,projection="+proj=merc",col="lightgrey",grid=FALSE)
+    plot(coastlineWorldFine,clon=-5,clat=50,span=200,projection="+proj=merc",col="lightgrey",grid=TRUE)
     # plot bathymetry
     mapContour(bathyLon, bathyLat, bathyZ,
         levels=c(-25,-50,-75,-100),
@@ -47,6 +47,8 @@ pdf(file="temp/results/figures/bathymap-temp.pdf",width=8,height=8,useDingbats=F
         lty=c(3,2,1,1),
         legend=c("25","50","75","100"),
         col='darkgray',title="Depth [m]",bg="white")
+    # add scalebar
+    mapScalebar(x="topright",length=20,cex=0.7)
     # add map data
     mapPoints(longitude=-4.136271,latitude=50.367561,pch=15,col="black",cex=2) # Plymouth
     mapPoints(longitude=-5.533078,latitude=50.116452,pch=15,col="black",cex=1.5) # Penzance
