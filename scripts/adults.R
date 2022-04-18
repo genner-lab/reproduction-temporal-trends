@@ -138,10 +138,13 @@ summary(m0)
 
 # tabulate model output
 glue("\nPrinting model summary in LaTeX format ...\n",.trim=FALSE)
-m0 %>% 
-    broom.mixed::tidy() %>% 
+
+# tidy model
+m0.tidy <- m0 %>% broom.mixed::tidy(conf.int=TRUE)
+# print
+m0.tidy %>% 
     mutate_if(is.character,~str_replace_all(.,"_","")) %>%
-    xtable(caption="blahhh",display=c("s","s","s","s","s","f","f","f","e")) %>% 
+    xtable(caption="blahhh",display=c("s","s","s","s","s","f","f","f","e","f","f")) %>% 
     print.xtable(include.rownames=FALSE,booktabs=TRUE,sanitize.text.function=identity,caption.placement="top",size="scriptsize")
 
 # model checks
@@ -184,6 +187,43 @@ MuMIn::model.sel(m0,m1)
 #emmeans(m0,"spawningByMonthUK",type="response") %>% plot()
 glue("\n",.trim=FALSE)
 pairs(emmeans(m0,"spawningByMonthUK"),type="response",reverse=TRUE)
+
+# extract SD for vars
+terms.sd <- surveys.joined.ann.sub %>% 
+    summarise(`scale(maxEfficiency)`=sd(maxEfficiency),`scale(individualsByGroupRate)`=sd(individualsByGroupRate)) %>%
+    pivot_longer(cols=everything(),names_to="term",values_to="term.sd")
+
+# unstandardise coefficients
+# https://aosmith.rbind.io/2018/03/26/unstandardizing-coefficients/
+m0.tidy.terms <- m0.tidy %>% 
+    left_join(terms.sd,by="term") %>% 
+    filter(effect=="fixed" & component=="cond" & term!="(Intercept)") %>%
+    select(term,estimate,p.value,conf.low,conf.high,term.sd) %>%
+    mutate(scale.factor=c(1000,0.1,1,1,1)) %>%
+    mutate(estimate=if_else(is.na(term.sd),exp(estimate),exp((estimate/term.sd)*scale.factor))) %>%
+    mutate(conf.low=if_else(is.na(term.sd),exp(conf.low),exp((conf.low/term.sd)*scale.factor))) %>%
+    mutate(conf.high=if_else(is.na(term.sd),exp(conf.high),exp((conf.high/term.sd)*scale.factor)))
+
+# make labs
+my.labels <- c("scale(individualsByGroupRate)"="Demersal trawl CPUE\n(per 1,000 indivs/haul)","scale(maxEfficiency)"="PCR efficiency\n(per 10% increase)","spawningByMonthUKTRUE"="Reproductive month\n(vs. non-reproductive)","lifestylebenthopelagic"="Benthopelagic lifestyle\n(vs. benthic)","lifestylepelagic"="Pelagic lifestyle\n(vs. benthic)")
+
+# plot the ORs
+p <- m0.tidy.terms %>% 
+    mutate(term=forcats::fct_relevel(term,rev(c("scale(individualsByGroupRate)","scale(maxEfficiency)","spawningByMonthUKTRUE","lifestylebenthopelagic","lifestylepelagic")))) %>%
+    mutate(ast=if_else(p.value<=0.05,"*",""),ast=if_else(p.value<=0.01,"**",ast),ast=if_else(p.value<=0.001,"***",ast)) %>%
+    mutate(astlab=paste(format(round(estimate,2),2),ast)) %>%
+    ggplot(aes(y=term,x=estimate,xmin=conf.low,xmax=conf.high)) + 
+        geom_pointrange(color="#2f8685",size=0.8) +
+        geom_text(aes(label=astlab),size=4,vjust=-1,hjust=-0.1,color="gray50") + #
+        geom_vline(xintercept=1,linetype=1,lwd=0.5,color="grey90") +
+        theme_clean(base_size=12) +
+        scale_x_log10(limits=c(0.5,50),breaks=c(0.5,1,2,5,10,20,50),labels=c(0.5,1,2,5,10,20,50)) +
+        xlab(label="Estimated fold increase in eDNA read abundance") + # Relative odds ratios of fixed effects
+        scale_y_discrete(labels=my.labels)
+#plot(p)
+
+# save
+ggsave(filename=here("temp/results/figures/forest-plot.svg"),plot=p,width=130,height=150,units="mm")
 
 # report
 glue("\nFigures saved to 'temp/results/figures'",.trim=FALSE)

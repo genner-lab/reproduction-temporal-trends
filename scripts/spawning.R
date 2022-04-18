@@ -58,5 +58,16 @@ p <-surveys.joined.coll %>% ggplot(aes(x=nReads,y=binvar)) +
 #plot(p)
 ggsave(filename=here("temp/results/figures/spawning.svg"),plot=p,width=110,height=140,units="mm")
 
+# print model
+glue("\nPrinting logistic regression model odds ration ...",.trim=FALSE)
+m0 <- glm(formula=binvar~nReads,family=binomial(link="logit"),data=surveys.joined.coll,na.action="na.omit")
+m0 %>% broom::tidy(conf.int=TRUE) %>% 
+    filter(term=="nReads") %>% 
+    mutate(scale.factor=1000) %>% 
+    mutate(estimate=exp(estimate*scale.factor)) %>%
+    mutate(conf.low=exp(conf.low*scale.factor)) %>%
+    mutate(conf.high=exp(conf.high*scale.factor)) %>% 
+    print()
+
 # report
 glue("\nFigures saved to 'temp/results/figures'",.trim=FALSE)
