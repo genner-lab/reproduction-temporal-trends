@@ -37,6 +37,7 @@ edna.spp <- edna.collapsed %>% distinct(species) %>% pull()
 glue("\nTotal number species (L4 trawl, full duration) = {trad.filtered %>% distinct(species) %>% count() %>% pull()}",.trim=FALSE)
 glue("Total number individuals (L4 trawl, full duration) = {trad.filtered %>% pull(individualCount) %>% sum()}")
 glue("Total number unique trawl events (L4 trawl, full duration) = {trad.filtered %>% distinct(eventID,eventDate,fieldNumber) %>% count() %>% pull()}")
+glue("Total number unique trawl days (L4 trawl, full duration) = {trad.filtered %>% distinct(eventID,eventDate) %>% count() %>% pull()}")
 
 # get numbers after time duration filter (correlations models)
 glue("\nTotal number species (L4 trawl, concurrent duration) = {length(trad.spp)}",.trim=FALSE)
@@ -189,6 +190,8 @@ nmds.tbl <- edna.mds %>%
     mutate(yearMonth=paste(str_split_fixed(Sample,"\\.",8)[,4],str_split_fixed(Sample,"\\.",8)[,3],sep="-"),locality=str_split_fixed(Sample,"\\.",8)[,1],site=paste(str_split_fixed(Sample,"\\.",8)[,1],str_split_fixed(Sample,"\\.",8)[,2],sep="-"),depth=str_split_fixed(Sample,"\\.",8)[,2],lib=str_split_fixed(Sample,"\\.",8)[,8]) %>%
     mutate(yearMonth=fct_relevel(yearMonth,c("2017-Feb","2017-Mar","2017-Apr","2017-May","2017-Jun","2017-Jul","2017-Aug","2017-Sep","2017-Oct","2017-Nov","2018-Feb","2018-Mar","2018-Apr"))) 
 
+# remove outliers if needed
+#nmds.tbl <- nmds.tbl %>% filter(NMDS2 <= 1.01)
 
 # plot all by YEARMONTH 
 p <- nmds.tbl %>% plot_nmds(var="yearMonth")
