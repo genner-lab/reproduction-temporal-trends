@@ -69,5 +69,12 @@ m0 %>% broom::tidy(conf.int=TRUE) %>%
     mutate(conf.high=exp(conf.high*scale.factor)) %>% 
     print()
 
+# print data summary and quantiles
+glue("\nPrinting number reads and 90th percentile ...",.trim=FALSE)
+surveys.joined.coll %>% 
+    group_by(binvar) %>% 
+    summarise(sum=sum(nReads),percs90=quantile(nReads,probs=c(0.9))) %>%
+    print()
+
 # report
 glue("\nFigures saved to 'temp/results/figures'",.trim=FALSE)
