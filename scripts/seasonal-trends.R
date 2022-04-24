@@ -73,7 +73,8 @@ p <- edna.pc1.tib %>%
 #plot(p)
 ggsave(filename=here("temp/results/figures/edna-pcoa.svg"),plot=p,width=130,height=80,units="mm")
 
-# SUPPORTING - plot edna PCA VARIABLES 
+# SUPPORTING - plot edna PCA VARIABLES
+# here PCA is same as PCoA for euclidean distances
 p <- plot.PCA(PCA(edna.mat,graph=FALSE,scale.unit=FALSE),choix="var",select="contrib 12",ggoptions=list(size=2,circle.lwd=0.3,circle.lty=3,line.lty=3,line.lwd=0.3)) + theme(plot.title=element_blank(),axis.title=element_text(size=8))
 #plot(p)
 ggsave(filename=here("temp/results/figures/edna-pcoa-plot-resids.svg"),plot=p,width=130,height=80,units="mm")
