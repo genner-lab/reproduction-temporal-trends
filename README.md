@@ -1,10 +1,8 @@
 [![DOI](https://zenodo.org/badge/362065020.svg)](https://zenodo.org/badge/latestdoi/362065020)
 
-# Reproduction explains marine eDNA variation
+# Reproduction influences marine eDNA variation
 
-Code for: Collins, R.A., Baillie, C., Halliday, N.C., Rainbird, S., Sims, D.W., Mariani, S. & Genner, M.J. (202x) Reproduction explains marine eDNA variation. _Insert Journal_. [https://doi.org/xxx](https://doi.org/xxx).
-
-To support this code, a full data description and summary can be found at [assets/data-description.pdf](assets/data-description.pdf).
+Code for: Collins, R.A., Baillie, C., Halliday, N.C., Rainbird, S., Sims, D.W., Mariani, S. & Genner, M.J. (202x) Reproduction influences seasonal eDNA variation in a temperate marine fish community. _Insert Journal_. [https://doi.org/xxx](https://doi.org/xxx).
 
 
 ### 1. Install software
