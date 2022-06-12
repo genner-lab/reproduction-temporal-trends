@@ -218,6 +218,29 @@ p <- nmds.tbl %>% plot_nmds(var="depth")
 ggsave(filename=here("temp/results/figures/depth-nmds.svg"),plot=p,width=200,height=170,units="mm")
 
 
+### SPECIES ACCUMULATION CURVES ###
+
+glue("\nNow running species accumulation curves ...\n",.trim=FALSE)
+
+# run vegan::specaccum
+set.seed(42)
+edna.mat.mds.spec <- edna.mat.mds %>% vegan::specaccum(method="random",permutations=1000)
+
+# convert to tibble
+edna.mat.mds.spec.tib <- tibble(sample=edna.mat.mds.spec$sites,richness=edna.mat.mds.spec$richness,sd=edna.mat.mds.spec$sd)
+
+# plot
+p <- edna.mat.mds.spec.tib %>% 
+    ggplot(aes(sample,richness)) +
+    geom_ribbon(aes(ymin=richness-2*sd,ymax=richness+2*sd),alpha=0.5,fill="gray90") +
+    geom_line(color="#2f8685") +
+    ylim(c(0,100)) +
+    ggthemes::theme_clean(base_size=12) +
+    labs(x="Number sampling events",y="Number species")
+# save
+ggsave(filename=here("temp/results/figures/specaccum.svg"),plot=p,width=200,height=105,units="mm")
+
+
 ### NEGATIVE CONTROLS ###
 
 # table of negative controls
