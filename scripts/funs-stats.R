@@ -576,3 +576,14 @@ plot_nmds <- function(df,var) {
         theme_bw()
 return(p)
 }
+
+
+# fun to extract data from vegan rarecurve object
+extract_rarecurve <- function(rep,lab) {
+    rep.tib <- tibble(
+        sample=lab,
+        lib=str_split_fixed(lab,"\\.",8)[,8],
+        species=rep,
+        reads=attr(rep,"Subsample"))
+    return(rep.tib)
+}
