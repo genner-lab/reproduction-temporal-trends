@@ -236,9 +236,28 @@ p <- edna.mat.mds.spec.tib %>%
     geom_line(color="#2f8685") +
     ylim(c(0,100)) +
     ggthemes::theme_clean(base_size=12) +
-    labs(x="Number sampling events",y="Number species")
+    labs(x="Number samples",y="Number species")
 # save
-ggsave(filename=here("temp/results/figures/specaccum.svg"),plot=p,width=200,height=105,units="mm")
+ggsave(filename=here("temp/results/figures/specaccum-samples.svg"),plot=p,width=200,height=105,units="mm")
+
+# run read rarefaction
+pdf(file=NULL) 
+rc <- vegan::rarecurve(edna.mat.mds,step=100,label=TRUE)
+dev.off()
+
+# extract tibbles for all samples and combine
+raref.list <- mapply(FUN=function(x,y) extract_rarecurve(rep=x,lab=y), x=rc,y=rownames(edna.mat.mds),SIMPLIFY=FALSE)
+raref.tab <- bind_rows(raref.list)
+
+# plot read rarefaction by library
+p <- raref.tab %>% ggplot(aes(x=reads,y=species,group=sample,color=lib)) +
+    geom_line(alpha=0.7) + 
+    ggthemes::theme_clean(base_size=12) +
+    labs(x="Number reads",y="Number species") +
+    scale_color_manual(values=ptol_pal()(4)) +
+    facet_wrap(~lib,scales="free")
+# save
+ggsave(filename=here("temp/results/figures/specaccum-reads.svg"),plot=p,width=200,height=150,units="mm")
 
 
 ### NEGATIVE CONTROLS ###
