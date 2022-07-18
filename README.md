@@ -2,7 +2,7 @@
 
 # Reproduction influences marine eDNA variation
 
-Code for: Collins, R.A., Baillie, C., Halliday, N.C., Rainbird, S., Sims, D.W., Mariani, S. & Genner, M.J. (202x) Reproduction influences seasonal eDNA variation in a temperate marine fish community. _Insert Journal_. [https://doi.org/xxx](https://doi.org/xxx).
+Code for: Collins, R.A., Baillie, C., Halliday, N.C., Rainbird, S., Sims, D.W., Mariani, S. & Genner, M.J. (2022) Reproduction influences seasonal eDNA variation in a temperate marine fish community. _Limnology and Oceanography Letters_. [https://doi.org/10.1002/lol2.10271](https://doi.org/10.1002/lol2.10271).
 
 
 ### 1. Install software
